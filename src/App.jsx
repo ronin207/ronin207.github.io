@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { HashRouter as Router, Routes, Route, useLocation, Link } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, useLocation, Link } from 'react-router-dom';
 import { Sun, Moon, Monitor } from 'lucide-react';
 import Home from './pages/Home';
 import Cv from './pages/Cv';

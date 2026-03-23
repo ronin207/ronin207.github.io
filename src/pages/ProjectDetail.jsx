@@ -2,10 +2,13 @@ import React from 'react';
 import { useParams, Link, Navigate } from 'react-router-dom';
 import { ArrowLeft, ArrowUpRight, Github } from 'lucide-react';
 import projects from '../data/projects';
+import usePageTitle from '../hooks/usePageTitle.jsx';
 
 export default function ProjectDetail({ resolvedTheme }) {
   const { slug } = useParams();
   const project = projects.find((p) => p.slug === slug);
+
+  usePageTitle(project?.title);
 
   if (!project) {
     return <Navigate to="/" replace />;

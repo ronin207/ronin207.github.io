@@ -1,6 +1,7 @@
 import React from 'react';
 import { ArrowLeft, Download, Globe, Award, BookOpen } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import usePageTitle from '../hooks/usePageTitle.jsx';
 
 const CvSection = ({ title, children }) => (
     <section className="mb-12">
@@ -34,6 +35,7 @@ const CvItem = ({ title, subtitle, date, location, children }) => (
 );
 
 export default function Cv({ resolvedTheme }) {
+    usePageTitle('CV');
     return (
         <div className="min-h-screen pt-32 pb-20 px-6 container mx-auto max-w-4xl">
             <div className="mb-12">

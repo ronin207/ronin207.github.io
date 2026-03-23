@@ -21,6 +21,51 @@
     }
 }
 
+/* Print styles for CV page */
+@media print {
+    /* Hide non-essential UI */
+    nav, canvas, .fixed, [aria-hidden="true"] {
+        display: none !important;
+    }
+
+    /* Reset backgrounds and colors for print */
+    body, html, #root, main, div {
+        background: white !important;
+        color: black !important;
+    }
+
+    /* Remove decorative elements */
+    .border-l {
+        border-left: none !important;
+    }
+
+    /* Optimize spacing */
+    .pt-32 {
+        padding-top: 0 !important;
+    }
+
+    .mb-12 {
+        margin-bottom: 1rem !important;
+    }
+
+    /* Ensure links show URLs */
+    a[href^="http"]::after {
+        content: " (" attr(href) ")";
+        font-size: 0.7em;
+        color: #666;
+    }
+
+    /* Page breaks */
+    section {
+        page-break-inside: avoid;
+    }
+
+    /* Hide download button */
+    a[href$=".pdf"] {
+        display: none !important;
+    }
+}
+
 /* Reduced motion: disable all transitions and animations */
 @media (prefers-reduced-motion: reduce) {
     *, *::before, *::after {

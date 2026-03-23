@@ -8,6 +8,7 @@ import ScrollProgress from './components/ScrollProgress';
 import PageTransition from './components/PageTransition';
 import Terminal from './components/Terminal';
 import CommandPalette from './components/CommandPalette';
+import { LanguageProvider, useLang } from './i18n/LanguageContext.jsx';
 import Home from './pages/Home';
 
 const Cv = lazy(() => import('./pages/Cv'));
@@ -182,6 +183,19 @@ const ThemeToggle = ({ theme, setTheme }) => (
   </div>
 );
 
+const LanguageToggle = () => {
+  const { lang, toggleLang } = useLang();
+  return (
+    <button
+      onClick={toggleLang}
+      className="px-2 py-1 rounded-full border border-neutral-200 dark:border-neutral-800 bg-white/50 dark:bg-neutral-900/50 backdrop-blur-sm text-[11px] font-mono text-neutral-500 hover:text-neutral-900 dark:hover:text-neutral-200 transition-colors"
+      aria-label={lang === 'en' ? 'Switch to Japanese' : 'Switch to English'}
+    >
+      {lang === 'en' ? 'JP' : 'EN'}
+    </button>
+  );
+};
+
 const ScrollToTop = () => {
   const { pathname } = useLocation();
 
@@ -198,19 +212,18 @@ const LoadingFallback = () => (
   </div>
 );
 
-export default function App() {
+function AppInner() {
   const { theme, setTheme, resolvedTheme } = useTheme();
+  const { t } = useLang();
   const [terminalOpen, setTerminalOpen] = useState(false);
   const [paletteOpen, setPaletteOpen] = useState(false);
 
   // Global keyboard shortcuts
   useEffect(() => {
     const handleKeyDown = (e) => {
-      // Ignore when typing in inputs
       const tag = e.target.tagName;
       const isInput = tag === 'INPUT' || tag === 'TEXTAREA';
 
-      // Backtick or tilde toggles terminal (unless typing in an input)
       if ((e.key === '`' || e.key === '~') && !isInput) {
         e.preventDefault();
         setTerminalOpen((prev) => !prev);
@@ -218,7 +231,6 @@ export default function App() {
         return;
       }
 
-      // Cmd+K or Ctrl+K toggles command palette
       if (e.key === 'k' && (e.metaKey || e.ctrlKey)) {
         e.preventDefault();
         setPaletteOpen((prev) => !prev);
@@ -226,7 +238,6 @@ export default function App() {
         return;
       }
 
-      // Escape closes either
       if (e.key === 'Escape') {
         setTerminalOpen(false);
         setPaletteOpen(false);
@@ -237,8 +248,14 @@ export default function App() {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, []);
 
+  const navItems = [
+    { key: 'overview', label: t.nav.overview },
+    { key: 'research', label: t.nav.research },
+    { key: 'contact', label: t.nav.contact },
+  ];
+
   return (
-    <Router>
+    <>
       <ScrollToTop />
       <div className={`min-h-screen transition-colors duration-500 font-sans overflow-x-hidden relative z-0
         ${resolvedTheme === 'dark' ? 'text-neutral-200 selection:bg-emerald-900 selection:text-emerald-50' : 'text-neutral-900 selection:bg-indigo-100 selection:text-indigo-900'}
@@ -246,14 +263,12 @@ export default function App() {
         <NeuralBackground theme={resolvedTheme} />
         <ScrollProgress resolvedTheme={resolvedTheme} />
 
-        {/* Terminal Easter Egg */}
         <Terminal
           isOpen={terminalOpen}
           onClose={() => setTerminalOpen(false)}
           resolvedTheme={resolvedTheme}
         />
 
-        {/* Command Palette */}
         <CommandPalette
           isOpen={paletteOpen}
           onClose={() => setPaletteOpen(false)}
@@ -268,18 +283,19 @@ export default function App() {
             </Link>
           </div>
 
-          <div className="flex items-center gap-8 pointer-events-auto">
+          <div className="flex items-center gap-4 md:gap-8 pointer-events-auto">
             <div className="hidden md:flex gap-8 text-xs font-mono text-neutral-500">
-              {['overview', 'research', 'contact'].map((item) => (
+              {navItems.map((item) => (
                 <a
-                  key={item}
-                  href={`/#${item}`}
+                  key={item.key}
+                  href={`/#${item.key}`}
                   className="hover:text-indigo-600 dark:hover:text-emerald-500 transition-colors uppercase tracking-widest"
                 >
-                  {item}
+                  {item.label}
                 </a>
               ))}
             </div>
+            <LanguageToggle />
             <ThemeToggle theme={theme} setTheme={setTheme} />
             <MobileNav resolvedTheme={resolvedTheme} />
           </div>
@@ -298,6 +314,16 @@ export default function App() {
           </Suspense>
         </main>
       </div>
+    </>
+  );
+}
+
+export default function App() {
+  return (
+    <Router>
+      <LanguageProvider>
+        <AppInner />
+      </LanguageProvider>
     </Router>
   );
 }

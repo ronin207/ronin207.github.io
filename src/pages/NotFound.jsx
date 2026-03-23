@@ -1,8 +1,10 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowLeft, Terminal } from 'lucide-react';
+import usePageTitle from '../hooks/usePageTitle.jsx';
 
 export default function NotFound({ resolvedTheme }) {
+  usePageTitle('404');
   return (
     <div className="min-h-screen flex items-center justify-center px-6">
       <div className="text-center max-w-md">

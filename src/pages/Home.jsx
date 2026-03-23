@@ -291,7 +291,7 @@ export default function Home({ resolvedTheme }) {
                         </div>
                     </FadeIn>
 
-                    {/* VC-LDAC Secondary Research */}
+                    {/* OntoVC Secondary Research */}
                     <FadeIn delay={100}>
                         <div className="bg-neutral-50 dark:bg-neutral-900/30 border border-neutral-200 dark:border-neutral-800 p-6 md:p-8 rounded-2xl">
                             <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6">

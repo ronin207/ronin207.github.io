@@ -41,10 +41,10 @@ const ja = {
     application: '動的属性管理',
   },
 
-  // VC-LDAC
+  // OntoVC
   vcldac: {
     label: '副研究',
-    title: 'VC-LDAC',
+    title: 'OntoVC',
     status: '進行中',
     description: 'Linked Dataの検証可能な資格情報を拡張し、プライバシーを保護するマルチ発行者オントロジー推論を実現。保有者はドメイン固有のオントロジーを使用して、中間前提を明かすことなく、複数の独立した資格情報から導出された事実を証明できます。SNARKと匿名認証システムを結合する二層検証アーキテクチャを特徴とし、LEAN 4による完全な形式検証を備えています。',
     focus: 'ZKオントロジー推論',

@@ -9,6 +9,7 @@ import PageTransition from './components/PageTransition';
 import Terminal from './components/Terminal';
 import CommandPalette from './components/CommandPalette';
 import { LanguageProvider, useLang } from './i18n/LanguageContext.jsx';
+import IntroAnimation from './components/IntroAnimation';
 import Home from './pages/Home';
 
 const Cv = lazy(() => import('./pages/Cv'));
@@ -217,6 +218,10 @@ function AppInner() {
   const { t } = useLang();
   const [terminalOpen, setTerminalOpen] = useState(false);
   const [paletteOpen, setPaletteOpen] = useState(false);
+  const [introComplete, setIntroComplete] = useState(() => {
+    if (typeof window === 'undefined') return true;
+    return !!sessionStorage.getItem('intro_played');
+  });
 
   // Global keyboard shortcuts
   useEffect(() => {
@@ -256,6 +261,12 @@ function AppInner() {
 
   return (
     <>
+      {!introComplete && (
+        <IntroAnimation
+          onComplete={() => setIntroComplete(true)}
+          resolvedTheme={resolvedTheme}
+        />
+      )}
       <ScrollToTop />
       <div className={`min-h-screen transition-colors duration-500 font-sans overflow-x-hidden relative z-0
         ${resolvedTheme === 'dark' ? 'text-neutral-200 selection:bg-emerald-900 selection:text-emerald-50' : 'text-neutral-900 selection:bg-indigo-100 selection:text-indigo-900'}

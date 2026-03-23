@@ -41,10 +41,10 @@ const en = {
     application: 'Dynamic Attribute Management',
   },
 
-  // VC-LDAC
+  // OntoVC
   vcldac: {
     label: 'Secondary Research',
-    title: 'VC-LDAC',
+    title: 'OntoVC',
     status: 'IN_PROGRESS',
     description: 'Extending Linked Data Verifiable Credentials to enable privacy-preserving multi-issuer ontological reasoning. A holder can prove derived facts from multiple independent credentials using domain-specific ontologies without revealing intermediate premises. Features a two-layer verification architecture binding SNARK and Anonymous Credential systems, with complete LEAN 4 formal verification.',
     focus: 'ZK Ontological Reasoning',

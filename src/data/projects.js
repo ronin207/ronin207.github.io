@@ -20,8 +20,8 @@ const projects = [
     links: {},
   },
   {
-    slug: 'vc-ldac',
-    title: 'VC-LDAC',
+    slug: 'ontovc',
+    title: 'OntoVC',
     category: 'Cryptographic Protocols',
     year: '2025',
     icon: Lock,
@@ -35,7 +35,28 @@ const projects = [
       'Constant-size proofs independent of database size or derivation depth',
       'Novel security definitions for ontology-constrained disclosure and device binding',
     ],
-    links: {},
+    links: {
+      github: 'https://github.com/ronin207/vc-ldac',
+    },
+  },
+  {
+    slug: 'pq-anonymous-credentials',
+    title: 'Post-Quantum Anonymous Credentials',
+    category: 'Cryptographic Protocols',
+    year: '2025',
+    icon: Lock,
+    description: 'Comparative analysis of zkVMs and SNARK circuit compilers for post-quantum anonymous credential systems. Master\'s thesis at Waseda University.',
+    techStack: ['Rust', 'zkVMs', 'SNARK', 'Loquat', 'BDEC'],
+    problem: 'Post-quantum anonymous credential systems like BDEC rely on static zkSNARK circuits that are inflexible for dynamic attribute management, rendering them impractical for real-world deployment where credential schemas evolve frequently.',
+    approach: 'Implementing and benchmarking the BDEC verifier within both zkVM and SNARK circuit compiler approaches. Measuring prover time, verification time, and memory usage to determine which approach offers a more viable and agile foundation for next-generation digital identity systems.',
+    outcomes: [
+      'Comparative benchmarks: prover time, verification time, memory usage',
+      'Poster accepted at Cryptology and Network Security 2025',
+      'Co-authored paper at SCIS 2025 on lattice-based anonymous credentials',
+    ],
+    links: {
+      github: 'https://github.com/ronin207/thesis26',
+    },
   },
   {
     slug: 'verifiable-credentials-wallet',
@@ -54,7 +75,9 @@ const projects = [
       'Implemented Issuer Hiding (BDEC) and Protego privacy protocols',
       'Published at Computer Security Symposium 2025',
     ],
-    links: {},
+    links: {
+      github: 'https://github.com/ronin207/vc-llm-app',
+    },
   },
   {
     slug: 'security-agent',
@@ -72,7 +95,9 @@ const projects = [
       'Multi-agent pipeline reduces false positive rate vs single-model approach',
       'Capable of analyzing Solidity, Rust, and Cairo contracts',
     ],
-    links: {},
+    links: {
+      github: 'https://github.com/ZOMIAResearch/sec-agent',
+    },
   },
   {
     slug: 'kiwitales',
@@ -90,7 +115,9 @@ const projects = [
       'Asynchronous orchestration handles 3+ second model latencies seamlessly',
       'State management optimized for generative AI workloads on mobile',
     ],
-    links: {},
+    links: {
+      github: 'https://github.com/atom27743/kiwi_tales',
+    },
   },
 ];
 

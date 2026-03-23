@@ -1,122 +1,40 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useRef, Suspense, lazy } from 'react';
 import { BrowserRouter as Router, Routes, Route, useLocation, Link } from 'react-router-dom';
 import { Sun, Moon, Monitor } from 'lucide-react';
+import useTheme from './hooks/useTheme.jsx';
+import { DecryptText } from './hooks/useScramble.jsx';
+import MobileNav from './components/MobileNav';
+import ScrollProgress from './components/ScrollProgress';
+import PageTransition from './components/PageTransition';
+import Terminal from './components/Terminal';
+import CommandPalette from './components/CommandPalette';
 import Home from './pages/Home';
-import Cv from './pages/Cv';
 
-/**
- * Hook: Scramble Effect
- * Visual "decryption" of text on hover/load.
- */
-const useScramble = (text, speed = 30) => {
-  const [displayText, setDisplayText] = useState(text);
-  const intervalRef = useRef(null);
-  const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789@#$%^&*()_+";
-
-  const scramble = useCallback(() => {
-    let iteration = 0;
-    clearInterval(intervalRef.current);
-
-    intervalRef.current = setInterval(() => {
-      setDisplayText(prev =>
-        text
-          .split("")
-          .map((letter, index) => {
-            if (index < iteration) {
-              return text[index];
-            }
-            return chars[Math.floor(Math.random() * chars.length)];
-          })
-          .join("")
-      );
-
-      if (iteration >= text.length) {
-        clearInterval(intervalRef.current);
-      }
-
-      iteration += 1 / 2;
-    }, speed);
-  }, [text, speed]);
-
-  useEffect(() => {
-    scramble();
-    return () => clearInterval(intervalRef.current);
-  }, [scramble]);
-
-  const trigger = () => scramble();
-  return { displayText, trigger };
-};
-
-const DecryptText = ({ text, className = "" }) => {
-  const { displayText, trigger } = useScramble(text);
-  return (
-    <span className={`font-mono cursor-default inline-block ${className}`} onMouseEnter={trigger}>
-      {displayText}
-    </span>
-  );
-};
-
-/**
- * Hook: Theme Management
- * Handles Light, Dark, and System preferences.
- */
-const useTheme = () => {
-  const [theme, setTheme] = useState('dark'); // 'light', 'dark', 'system'
-
-  useEffect(() => {
-    const savedTheme = localStorage.getItem('theme') || 'system';
-    setTheme(savedTheme);
-  }, []);
-
-  useEffect(() => {
-    localStorage.setItem('theme', theme);
-    const root = window.document.documentElement;
-
-    const applyTheme = (t) => {
-      if (t === 'dark') {
-        root.classList.add('dark');
-        root.classList.remove('light');
-      } else {
-        root.classList.remove('dark');
-        root.classList.add('light');
-      }
-    };
-
-    if (theme === 'system') {
-      const systemTheme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-      applyTheme(systemTheme);
-
-      const listener = (e) => applyTheme(e.matches ? 'dark' : 'light');
-      window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', listener);
-      return () => window.matchMedia('(prefers-color-scheme: dark)').removeEventListener('change', listener);
-    } else {
-      applyTheme(theme);
-    }
-  }, [theme]);
-
-  // Return the resolved theme for JS-based styling (canvas)
-  const resolvedTheme = theme === 'system'
-    ? (typeof window !== 'undefined' && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light')
-    : theme;
-
-  return { theme, setTheme, resolvedTheme };
-};
+const Cv = lazy(() => import('./pages/Cv'));
+const ProjectDetail = lazy(() => import('./pages/ProjectDetail'));
+const NotFound = lazy(() => import('./pages/NotFound'));
 
 /**
  * Component: Interactive Background
  * Adapts particle color based on the current theme.
+ * Pauses when tab is hidden or user prefers reduced motion.
  */
 const NeuralBackground = ({ theme }) => {
   const canvasRef = useRef(null);
 
   useEffect(() => {
+    // Respect reduced motion
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      return;
+    }
+
     const canvas = canvasRef.current;
     const ctx = canvas.getContext('2d');
     let animationFrameId;
     let particles = [];
     let mouse = { x: null, y: null };
+    let paused = false;
 
-    // Colors based on theme
     const particleColor = theme === 'dark' ? 'rgba(150, 150, 150, 0.3)' : 'rgba(50, 50, 50, 0.2)';
     const lineColorBase = theme === 'dark' ? '150, 150, 150' : '50, 50, 50';
 
@@ -125,11 +43,21 @@ const NeuralBackground = ({ theme }) => {
       canvas.height = window.innerHeight;
     };
 
-    window.addEventListener('resize', resize);
-    window.addEventListener('mousemove', (e) => {
+    const handleMouseMove = (e) => {
       mouse.x = e.x;
       mouse.y = e.y;
-    });
+    };
+
+    const handleVisibility = () => {
+      paused = document.hidden;
+      if (!paused) {
+        animationFrameId = requestAnimationFrame(animate);
+      }
+    };
+
+    window.addEventListener('resize', resize);
+    window.addEventListener('mousemove', handleMouseMove);
+    document.addEventListener('visibilitychange', handleVisibility);
 
     resize();
 
@@ -140,8 +68,6 @@ const NeuralBackground = ({ theme }) => {
         this.vx = (Math.random() - 0.5) * 0.3;
         this.vy = (Math.random() - 0.5) * 0.3;
         this.size = Math.random() * 1.5;
-        this.baseX = this.x;
-        this.baseY = this.y;
         this.density = (Math.random() * 30) + 1;
       }
 
@@ -149,25 +75,19 @@ const NeuralBackground = ({ theme }) => {
         this.x += this.vx;
         this.y += this.vy;
 
-        // Bounce off edges
         if (this.x < 0 || this.x > canvas.width) this.vx *= -1;
         if (this.y < 0 || this.y > canvas.height) this.vy *= -1;
 
-        // Mouse interaction - particles flee slightly
         if (mouse.x != null) {
           let dx = mouse.x - this.x;
           let dy = mouse.y - this.y;
           let distance = Math.sqrt(dx * dx + dy * dy);
-          let forceDirectionX = dx / distance;
-          let forceDirectionY = dy / distance;
           let maxDistance = 120;
-          let force = (maxDistance - distance) / maxDistance;
-          let directionX = forceDirectionX * force * this.density;
-          let directionY = forceDirectionY * force * this.density;
 
           if (distance < maxDistance) {
-            this.x -= directionX;
-            this.y -= directionY;
+            let force = (maxDistance - distance) / maxDistance;
+            this.x -= (dx / distance) * force * this.density;
+            this.y -= (dy / distance) * force * this.density;
           }
         }
       }
@@ -182,13 +102,15 @@ const NeuralBackground = ({ theme }) => {
 
     const init = () => {
       particles = [];
-      const particleCount = Math.min(window.innerWidth / 10, 100); // Increased density slightly
+      const particleCount = Math.min(window.innerWidth / 10, 100);
       for (let i = 0; i < particleCount; i++) {
         particles.push(new Particle());
       }
     };
 
     const animate = () => {
+      if (paused) return;
+
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
       particles.forEach((p, index) => {
@@ -220,6 +142,8 @@ const NeuralBackground = ({ theme }) => {
 
     return () => {
       window.removeEventListener('resize', resize);
+      window.removeEventListener('mousemove', handleMouseMove);
+      document.removeEventListener('visibilitychange', handleVisibility);
       cancelAnimationFrame(animationFrameId);
     };
   }, [theme]);
@@ -227,7 +151,6 @@ const NeuralBackground = ({ theme }) => {
   return (
     <canvas
       ref={canvasRef}
-      // BG color moved here to ensure canvas is the background layer
       className={`fixed top-0 left-0 w-full h-full -z-10 transition-colors duration-500 ${theme === 'dark' ? 'bg-[#050505]' : 'bg-[#FAFAFA]'}`}
     />
   );
@@ -238,28 +161,27 @@ const ThemeToggle = ({ theme, setTheme }) => (
     <button
       onClick={() => setTheme('light')}
       className={`p-1.5 rounded-full transition-all ${theme === 'light' ? 'bg-neutral-200 text-neutral-900' : 'text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-300'}`}
-      title="Light Mode"
+      aria-label="Switch to light mode"
     >
       <Sun size={14} />
     </button>
     <button
       onClick={() => setTheme('system')}
       className={`p-1.5 rounded-full transition-all ${theme === 'system' ? 'bg-neutral-200 dark:bg-neutral-700 text-neutral-900 dark:text-neutral-100' : 'text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-300'}`}
-      title="System Mode"
+      aria-label="Switch to system theme"
     >
       <Monitor size={14} />
     </button>
     <button
       onClick={() => setTheme('dark')}
       className={`p-1.5 rounded-full transition-all ${theme === 'dark' ? 'bg-neutral-800 text-neutral-100' : 'text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-300'}`}
-      title="Dark Mode"
+      aria-label="Switch to dark mode"
     >
       <Moon size={14} />
     </button>
   </div>
 );
 
-// ScrollToTop component to handle scroll restoration
 const ScrollToTop = () => {
   const { pathname } = useLocation();
 
@@ -270,8 +192,50 @@ const ScrollToTop = () => {
   return null;
 };
 
+const LoadingFallback = () => (
+  <div className="min-h-screen flex items-center justify-center">
+    <div className="text-sm font-mono text-neutral-500 animate-pulse">Loading...</div>
+  </div>
+);
+
 export default function App() {
   const { theme, setTheme, resolvedTheme } = useTheme();
+  const [terminalOpen, setTerminalOpen] = useState(false);
+  const [paletteOpen, setPaletteOpen] = useState(false);
+
+  // Global keyboard shortcuts
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      // Ignore when typing in inputs
+      const tag = e.target.tagName;
+      const isInput = tag === 'INPUT' || tag === 'TEXTAREA';
+
+      // Backtick or tilde toggles terminal (unless typing in an input)
+      if ((e.key === '`' || e.key === '~') && !isInput) {
+        e.preventDefault();
+        setTerminalOpen((prev) => !prev);
+        setPaletteOpen(false);
+        return;
+      }
+
+      // Cmd+K or Ctrl+K toggles command palette
+      if (e.key === 'k' && (e.metaKey || e.ctrlKey)) {
+        e.preventDefault();
+        setPaletteOpen((prev) => !prev);
+        setTerminalOpen(false);
+        return;
+      }
+
+      // Escape closes either
+      if (e.key === 'Escape') {
+        setTerminalOpen(false);
+        setPaletteOpen(false);
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
 
   return (
     <Router>
@@ -279,11 +243,25 @@ export default function App() {
       <div className={`min-h-screen transition-colors duration-500 font-sans overflow-x-hidden relative z-0
         ${resolvedTheme === 'dark' ? 'text-neutral-200 selection:bg-emerald-900 selection:text-emerald-50' : 'text-neutral-900 selection:bg-indigo-100 selection:text-indigo-900'}
       `}>
-        {/* Background canvas now handles the background color to avoid z-index masking issues */}
         <NeuralBackground theme={resolvedTheme} />
+        <ScrollProgress resolvedTheme={resolvedTheme} />
+
+        {/* Terminal Easter Egg */}
+        <Terminal
+          isOpen={terminalOpen}
+          onClose={() => setTerminalOpen(false)}
+          resolvedTheme={resolvedTheme}
+        />
+
+        {/* Command Palette */}
+        <CommandPalette
+          isOpen={paletteOpen}
+          onClose={() => setPaletteOpen(false)}
+          resolvedTheme={resolvedTheme}
+        />
 
         {/* Navigation */}
-        <nav className="fixed top-0 left-0 w-full z-50 px-6 py-6 flex justify-between items-center bg-transparent pointer-events-none">
+        <nav className="fixed top-0 left-0 w-full z-50 px-4 md:px-6 py-6 flex justify-between items-center bg-transparent pointer-events-none">
           <div className={`text-sm font-bold tracking-tight pointer-events-auto ${resolvedTheme === 'dark' ? 'text-white' : 'text-neutral-900'}`}>
             <Link to="/">
               <DecryptText text="TAKUMI.DEV" />
@@ -296,24 +274,30 @@ export default function App() {
                 <a
                   key={item}
                   href={`/#${item}`}
-                  className={`hover:text-indigo-600 dark:hover:text-emerald-500 transition-colors uppercase tracking-widest`}
+                  className="hover:text-indigo-600 dark:hover:text-emerald-500 transition-colors uppercase tracking-widest"
                 >
                   {item}
                 </a>
               ))}
             </div>
             <ThemeToggle theme={theme} setTheme={setTheme} />
+            <MobileNav resolvedTheme={resolvedTheme} />
           </div>
         </nav>
 
         <main className="relative z-10">
-          <Routes>
-            <Route path="/" element={<Home resolvedTheme={resolvedTheme} DecryptText={DecryptText} />} />
-            <Route path="/cv" element={<Cv resolvedTheme={resolvedTheme} />} />
-          </Routes>
+          <Suspense fallback={<LoadingFallback />}>
+            <PageTransition>
+              <Routes>
+                <Route path="/" element={<Home resolvedTheme={resolvedTheme} />} />
+                <Route path="/cv" element={<Cv resolvedTheme={resolvedTheme} />} />
+                <Route path="/projects/:slug" element={<ProjectDetail resolvedTheme={resolvedTheme} />} />
+                <Route path="*" element={<NotFound resolvedTheme={resolvedTheme} />} />
+              </Routes>
+            </PageTransition>
+          </Suspense>
         </main>
       </div>
     </Router>
   );
 }
-

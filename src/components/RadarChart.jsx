@@ -42,7 +42,11 @@ const RadarChart = ({ data, size = 300, theme = 'dark' }) => {
 
     return (
         <div className="flex flex-col items-center justify-center">
-            <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} className="overflow-visible">
+            <svg
+                viewBox={`0 0 ${size} ${size}`}
+                className="overflow-visible w-full h-auto"
+                style={{ maxWidth: size }}
+            >
                 {/* Grid Circles/Polygons */}
                 {levels.map((level, i) => {
                     const levelPoints = data.map((_, index) => {

@@ -1,7 +1,32 @@
 @import "tailwindcss";
 
+/* Use class-based dark mode instead of media query so the theme toggle works */
+@custom-variant dark (&:where(.dark, .dark *));
+
 @layer base {
     html {
         scroll-behavior: smooth;
+    }
+}
+
+/* Terminal slide-in animation */
+@keyframes terminalIn {
+    from {
+        opacity: 0;
+        transform: scale(0.96) translateY(8px);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+    }
+}
+
+/* Reduced motion: disable all transitions and animations */
+@media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
     }
 }

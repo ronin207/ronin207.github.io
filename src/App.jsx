@@ -308,7 +308,11 @@ function AppInner() {
             </div>
             <LanguageToggle />
             <ThemeToggle theme={theme} setTheme={setTheme} />
-            <MobileNav resolvedTheme={resolvedTheme} />
+            <MobileNav
+              resolvedTheme={resolvedTheme}
+              onTerminalOpen={() => { setTerminalOpen(true); setPaletteOpen(false); }}
+              onPaletteOpen={() => { setPaletteOpen(true); setTerminalOpen(false); }}
+            />
           </div>
         </nav>
 

@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { Menu, X } from 'lucide-react';
+import { Menu, X, TerminalSquare, Search } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
 
-const MobileNav = ({ resolvedTheme }) => {
+const MobileNav = ({ resolvedTheme, onTerminalOpen, onPaletteOpen }) => {
   const [isOpen, setIsOpen] = useState(false);
   const { pathname } = useLocation();
+  const isDark = resolvedTheme === 'dark';
 
   // Close on route change
   useEffect(() => {
@@ -28,12 +29,18 @@ const MobileNav = ({ resolvedTheme }) => {
     { label: 'CV', href: '/cv', isRoute: true },
   ];
 
+  const linkClass = `text-2xl font-mono tracking-widest uppercase transition-colors ${
+    isDark
+      ? 'text-neutral-300 hover:text-emerald-500'
+      : 'text-neutral-600 hover:text-indigo-600'
+  }`;
+
   return (
     <div className="md:hidden">
       <button
         onClick={() => setIsOpen(!isOpen)}
         className={`p-2 rounded-lg transition-colors ${
-          resolvedTheme === 'dark'
+          isDark
             ? 'text-neutral-300 hover:bg-neutral-800'
             : 'text-neutral-600 hover:bg-neutral-100'
         }`}
@@ -53,7 +60,7 @@ const MobileNav = ({ resolvedTheme }) => {
         {/* Backdrop */}
         <div
           className={`absolute inset-0 backdrop-blur-xl ${
-            resolvedTheme === 'dark' ? 'bg-black/90' : 'bg-white/90'
+            isDark ? 'bg-black/90' : 'bg-white/90'
           }`}
           onClick={() => setIsOpen(false)}
         />
@@ -63,22 +70,22 @@ const MobileNav = ({ resolvedTheme }) => {
           {navItems.map((item, i) => (
             <div
               key={item.label}
-              className={`transform transition-all duration-300 ${
+              className={`transform ${
                 isOpen
                   ? 'translate-y-0 opacity-100'
                   : 'translate-y-4 opacity-0'
               }`}
-              style={{ transitionDelay: isOpen ? `${i * 75}ms` : '0ms' }}
+              style={{
+                transitionProperty: 'transform, opacity',
+                transitionDuration: '300ms',
+                transitionDelay: isOpen ? `${i * 75}ms` : '0ms',
+              }}
             >
               {item.isRoute ? (
                 <Link
                   to={item.href}
                   onClick={() => setIsOpen(false)}
-                  className={`text-2xl font-mono tracking-widest uppercase transition-colors ${
-                    resolvedTheme === 'dark'
-                      ? 'text-neutral-300 hover:text-emerald-500'
-                      : 'text-neutral-600 hover:text-indigo-600'
-                  }`}
+                  className={linkClass}
                 >
                   {item.label}
                 </Link>
@@ -86,17 +93,67 @@ const MobileNav = ({ resolvedTheme }) => {
                 <a
                   href={item.href}
                   onClick={() => setIsOpen(false)}
-                  className={`text-2xl font-mono tracking-widest uppercase transition-colors ${
-                    resolvedTheme === 'dark'
-                      ? 'text-neutral-300 hover:text-emerald-500'
-                      : 'text-neutral-600 hover:text-indigo-600'
-                  }`}
+                  className={linkClass}
                 >
                   {item.label}
                 </a>
               )}
             </div>
           ))}
+
+          {/* Divider */}
+          <div
+            className={`w-12 border-t ${isDark ? 'border-neutral-700' : 'border-neutral-300'}`}
+            style={{
+              transitionProperty: 'opacity',
+              transitionDuration: '300ms',
+              transitionDelay: isOpen ? `${navItems.length * 75}ms` : '0ms',
+              opacity: isOpen ? 1 : 0,
+            }}
+          />
+
+          {/* Terminal & Search buttons */}
+          <div
+            className={`flex gap-6 transform ${
+              isOpen ? 'translate-y-0 opacity-100' : 'translate-y-4 opacity-0'
+            }`}
+            style={{
+              transitionProperty: 'transform, opacity',
+              transitionDuration: '300ms',
+              transitionDelay: isOpen ? `${(navItems.length + 1) * 75}ms` : '0ms',
+            }}
+          >
+            <button
+              onClick={() => {
+                setIsOpen(false);
+                setTimeout(() => onTerminalOpen?.(), 150);
+              }}
+              className={`flex flex-col items-center gap-2 p-4 rounded-xl transition-colors ${
+                isDark
+                  ? 'text-neutral-400 hover:text-emerald-500 hover:bg-neutral-800/50'
+                  : 'text-neutral-500 hover:text-indigo-600 hover:bg-neutral-100/50'
+              }`}
+              aria-label="Open terminal"
+            >
+              <TerminalSquare size={24} />
+              <span className="text-xs font-mono tracking-wider uppercase">Terminal</span>
+            </button>
+            <button
+              onClick={() => {
+                setIsOpen(false);
+                setTimeout(() => onPaletteOpen?.(), 150);
+              }}
+              className={`flex flex-col items-center gap-2 p-4 rounded-xl transition-colors ${
+                isDark
+                  ? 'text-neutral-400 hover:text-emerald-500 hover:bg-neutral-800/50'
+                  : 'text-neutral-500 hover:text-indigo-600 hover:bg-neutral-100/50'
+              }`}
+              aria-label="Open search"
+            >
+              <Search size={24} />
+              <span className="text-xs font-mono tracking-wider uppercase">Search</span>
+            </button>
+          </div>
         </nav>
       </div>
     </div>

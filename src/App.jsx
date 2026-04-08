@@ -10,6 +10,7 @@ import Terminal from './components/Terminal';
 import CommandPalette from './components/CommandPalette';
 import { LanguageProvider, useLang } from './i18n/LanguageContext.jsx';
 import IntroAnimation from './components/IntroAnimation';
+import CustomCursor from './components/CustomCursor';
 import Home from './pages/Home';
 
 const Cv = lazy(() => import('./pages/Cv'));
@@ -273,6 +274,7 @@ function AppInner() {
       `}>
         <NeuralBackground theme={resolvedTheme} />
         <ScrollProgress resolvedTheme={resolvedTheme} />
+        <CustomCursor resolvedTheme={resolvedTheme} />
 
         <Terminal
           isOpen={terminalOpen}

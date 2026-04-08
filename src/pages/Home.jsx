@@ -8,6 +8,8 @@ import projects from '../data/projects';
 import { radarData } from '../data/skills';
 import MultiverseText from '../components/MultiverseText';
 import GlitchHex from '../components/GlitchHex';
+import TiltCard from '../components/TiltCard';
+import HeroVisual from '../components/HeroVisual';
 import usePageTitle from '../hooks/usePageTitle.jsx';
 import { useLang } from '../i18n/LanguageContext.jsx';
 
@@ -30,30 +32,32 @@ const ProjectCard = ({ project, resolvedTheme, index }) => {
     const Icon = project.icon;
     return (
         <FadeIn delay={index * 100}>
-            <Link
-                to={`/projects/${project.slug}`}
-                className="group block border-t border-neutral-200 dark:border-neutral-800 py-8 transition-all hover:bg-neutral-50/50 dark:hover:bg-neutral-900/30 -mx-4 px-4 rounded-lg"
-            >
-                <div className="flex flex-col md:flex-row md:items-baseline justify-between mb-4">
-                    <div className="flex items-center gap-3">
-                        {Icon && <Icon size={16} className="text-neutral-400 dark:text-neutral-500" />}
-                        <h3 className="text-xl font-medium text-neutral-800 dark:text-neutral-200 group-hover:text-indigo-600 dark:group-hover:text-white transition-colors">
-                            {project.title}
-                        </h3>
+            <TiltCard className="relative rounded-lg" maxTilt={6} scale={1.008} glareOpacity={0.06}>
+                <Link
+                    to={`/projects/${project.slug}`}
+                    className="group block border-t border-neutral-200 dark:border-neutral-800 py-8 transition-all hover:bg-neutral-50/50 dark:hover:bg-neutral-900/30 -mx-4 px-4 rounded-lg"
+                >
+                    <div className="flex flex-col md:flex-row md:items-baseline justify-between mb-4">
+                        <div className="flex items-center gap-3">
+                            {Icon && <Icon size={16} className="text-neutral-400 dark:text-neutral-500" />}
+                            <h3 className="text-xl font-medium text-neutral-800 dark:text-neutral-200 group-hover:text-indigo-600 dark:group-hover:text-white transition-colors">
+                                {project.title}
+                            </h3>
+                        </div>
+                        <div className="flex gap-4 text-xs font-mono text-neutral-500 mt-2 md:mt-0">
+                            <span>{project.category}</span>
+                            <span>[{project.year}]</span>
+                        </div>
                     </div>
-                    <div className="flex gap-4 text-xs font-mono text-neutral-500 mt-2 md:mt-0">
-                        <span>{project.category}</span>
-                        <span>[{project.year}]</span>
+                    <p className="text-neutral-600 dark:text-neutral-400 font-light max-w-2xl leading-relaxed">
+                        {project.description}
+                    </p>
+                    <div className="mt-4 opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-2 text-xs font-mono text-indigo-600 dark:text-emerald-500">
+                        <span>VIEW_PROJECT</span>
+                        <ArrowUpRight size={14} />
                     </div>
-                </div>
-                <p className="text-neutral-600 dark:text-neutral-400 font-light max-w-2xl leading-relaxed">
-                    {project.description}
-                </p>
-                <div className="mt-4 opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-2 text-xs font-mono text-indigo-600 dark:text-emerald-500">
-                    <span>VIEW_PROJECT</span>
-                    <ArrowUpRight size={14} />
-                </div>
-            </Link>
+                </Link>
+            </TiltCard>
         </FadeIn>
     );
 };
@@ -178,41 +182,50 @@ export default function Home({ resolvedTheme }) {
             <header id="overview" className="mb-20 md:mb-40 ml-2 md:ml-12 pl-4 md:pl-12 border-l border-neutral-200 dark:border-neutral-800 relative transition-colors duration-500">
                 <div className="absolute -left-[1px] top-0 h-full w-[1px] bg-gradient-to-b from-indigo-500/50 dark:from-emerald-500/50 to-transparent" />
 
-                <FadeIn>
-                    <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-neutral-200 dark:border-neutral-800 bg-white/50 dark:bg-neutral-900/50 mb-8 backdrop-blur-sm">
-                        <div className={`w-1.5 h-1.5 rounded-full animate-pulse ${resolvedTheme === 'dark' ? 'bg-emerald-500' : 'bg-indigo-600'}`} />
-                        <span className="text-[10px] font-mono tracking-widest text-neutral-500 uppercase">
-                            {t.hero.badge}
-                        </span>
+                <div className="flex items-start justify-between">
+                    <div className="flex-1 min-w-0">
+                        <FadeIn>
+                            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-neutral-200 dark:border-neutral-800 bg-white/50 dark:bg-neutral-900/50 mb-8 backdrop-blur-sm">
+                                <div className={`w-1.5 h-1.5 rounded-full animate-pulse ${resolvedTheme === 'dark' ? 'bg-emerald-500' : 'bg-indigo-600'}`} />
+                                <span className="text-[10px] font-mono tracking-widest text-neutral-500 uppercase">
+                                    {t.hero.badge}
+                                </span>
+                            </div>
+                        </FadeIn>
+
+                        <FadeIn delay={100}>
+                            <h1 className="text-4xl md:text-7xl font-light tracking-tight leading-[1.1] mb-8">
+                                <MultiverseText resolvedTheme={resolvedTheme}>{t.hero.title_1}</MultiverseText> <br />
+                                <span className={`text-transparent bg-clip-text bg-gradient-to-r ${resolvedTheme === 'dark' ? 'from-neutral-100 to-neutral-500' : 'from-neutral-900 to-neutral-500'}`}>
+                                    <DecryptText text={t.hero.title_2} />
+                                </span>.
+                            </h1>
+                        </FadeIn>
+
+                        <FadeIn delay={200}>
+                            <p className="max-w-xl text-lg md:text-xl text-neutral-600 dark:text-neutral-400 font-light leading-relaxed mb-12">
+                                <RichText text={t.hero.description} boldClass={boldClass} />
+                            </p>
+                        </FadeIn>
+
+                        <FadeIn delay={300}>
+                            <div className="flex gap-6">
+                                <a href="#research" className={`group flex items-center gap-3 px-6 py-3 text-sm font-medium transition-colors ${resolvedTheme === 'dark' ? 'bg-white text-black hover:bg-neutral-200' : 'bg-neutral-900 text-white hover:bg-neutral-700'}`}>
+                                    <span>{t.hero.cta_primary}</span>
+                                    <ArrowUpRight size={16} className="transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
+                                </a>
+                                <a href="#contact" className="flex items-center gap-3 px-6 py-3 border border-neutral-300 dark:border-neutral-800 text-neutral-500 dark:text-neutral-400 text-sm font-mono hover:text-indigo-600 dark:hover:text-white hover:border-indigo-600 dark:hover:border-neutral-600 transition-colors">
+                                    <span>{t.hero.cta_secondary}</span>
+                                </a>
+                            </div>
+                        </FadeIn>
                     </div>
-                </FadeIn>
 
-                <FadeIn delay={100}>
-                    <h1 className="text-4xl md:text-7xl font-light tracking-tight leading-[1.1] mb-8">
-                        <MultiverseText resolvedTheme={resolvedTheme}>{t.hero.title_1}</MultiverseText> <br />
-                        <span className={`text-transparent bg-clip-text bg-gradient-to-r ${resolvedTheme === 'dark' ? 'from-neutral-100 to-neutral-500' : 'from-neutral-900 to-neutral-500'}`}>
-                            <DecryptText text={t.hero.title_2} />
-                        </span>.
-                    </h1>
-                </FadeIn>
-
-                <FadeIn delay={200}>
-                    <p className="max-w-xl text-lg md:text-xl text-neutral-600 dark:text-neutral-400 font-light leading-relaxed mb-12">
-                        <RichText text={t.hero.description} boldClass={boldClass} />
-                    </p>
-                </FadeIn>
-
-                <FadeIn delay={300}>
-                    <div className="flex gap-6">
-                        <a href="#research" className={`group flex items-center gap-3 px-6 py-3 text-sm font-medium transition-colors ${resolvedTheme === 'dark' ? 'bg-white text-black hover:bg-neutral-200' : 'bg-neutral-900 text-white hover:bg-neutral-700'}`}>
-                            <span>{t.hero.cta_primary}</span>
-                            <ArrowUpRight size={16} className="transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
-                        </a>
-                        <a href="#contact" className="flex items-center gap-3 px-6 py-3 border border-neutral-300 dark:border-neutral-800 text-neutral-500 dark:text-neutral-400 text-sm font-mono hover:text-indigo-600 dark:hover:text-white hover:border-indigo-600 dark:hover:border-neutral-600 transition-colors">
-                            <span>{t.hero.cta_secondary}</span>
-                        </a>
-                    </div>
-                </FadeIn>
+                    {/* Hero Visual — animated lattice */}
+                    <FadeIn delay={400} className="hidden lg:block flex-shrink-0 w-[280px] h-[280px] -mr-8 -mt-4">
+                        <HeroVisual resolvedTheme={resolvedTheme} />
+                    </FadeIn>
+                </div>
             </header>
 
             {/* Selected Work / Research */}

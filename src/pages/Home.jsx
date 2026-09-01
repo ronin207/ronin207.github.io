@@ -172,11 +172,13 @@ export default function Home() {
     // sheet that scrolls up over it. No route change, no hard cut.
     const [cityView, setCityView] = useState(null); // null | 'tokyo' | 'singapore'
     const [sheetState, setSheetState] = useState('closed'); // closed | open | closing
+    const [engaged, setEngaged] = useState(false); // globe is flying or a city is open
     const flying = useRef(false);
 
     const goCity = (city) => {
         if (flying.current) return;
         flying.current = true;
+        setEngaged(true);
         globeRef.current?.flyTo(city, () => {
             flying.current = false;
             setCityView(city);
@@ -190,7 +192,7 @@ export default function Home() {
         setTimeout(() => {
             setSheetState('closed');
             setCityView(null);
-            globeRef.current?.flyBack();
+            globeRef.current?.flyBack(() => setEngaged(false));
         }, 280);
     };
 
@@ -276,20 +278,23 @@ export default function Home() {
                 into the work, never a gate: everything remains reachable
                 by scrolling. Entrance choreography plays on first visit. */}
             <header id="overview" className="entrance mb-24 md:mb-32 flex flex-col items-center text-center">
-                <h1 className="text-5xl md:text-[64px] font-medium tracking-[-0.04em] leading-[1.05] text-ink mb-6">
+                {/* Everything but the globe recedes while a city is open */}
+                <h1 className={`text-3xl md:text-4xl font-medium tracking-[-0.03em] leading-[1.05] text-ink mb-4 transition-opacity duration-500 ${engaged ? 'opacity-0' : ''}`}>
                     {t.hero.name}
                 </h1>
-                <p className="text-2xl md:text-[28px] font-light tracking-[-0.015em] leading-snug text-ink mb-5 max-w-xl">
+                <p className={`text-lg md:text-xl font-light tracking-[-0.01em] leading-snug text-ink mb-3 max-w-lg transition-opacity duration-500 ${engaged ? 'opacity-0' : ''}`}>
                     {t.hero.statement}
                 </p>
-                <p className="text-ink-2 leading-relaxed mb-6 max-w-xl">
+                <p className={`text-sm text-ink-2 leading-relaxed mb-2 max-w-lg transition-opacity duration-500 ${engaged ? 'opacity-0' : ''}`}>
                     {t.hero.description}
                 </p>
                 <div className="w-full flex justify-center">
-                    <WorkGlobe ref={globeRef} size={400} />
+                    <WorkGlobe ref={globeRef} size={520} />
                 </div>
-                <p className="text-xs text-ink-3 mt-5 mb-4">{t.locations.explore}</p>
-                <div className="flex flex-wrap justify-center gap-3">
+                <p className={`text-xs text-ink-3 mt-5 mb-4 transition-opacity duration-500 ${engaged ? 'opacity-0' : ''}`}>
+                    {t.locations.explore}
+                </p>
+                <div className={`flex flex-wrap justify-center gap-3 transition-opacity duration-500 ${engaged ? 'opacity-0 pointer-events-none' : ''}`}>
                     {['tokyo', 'singapore'].map((city) => (
                         <button
                             key={city}

@@ -118,30 +118,53 @@ const WorkGlobe = forwardRef(function WorkGlobe(
       raf = requestAnimationFrame(step);
     };
 
-    // The pull-in: the globe itself grows out of its box toward the
-    // viewer (CSS transform) while the camera dives into the city
-    // (cobe state). The globe persists — the city sheet scrolls up
-    // over it, and flyBack() reverses the journey on close.
-    let elScale = 1;
-    const setElScale = (v) => {
-      elScale = v;
-      canvas.style.transform = `scale(${v})`;
+    // The pull-in: the globe grows and glides as one whole circle —
+    // all on the element transform, never the internal camera, so the
+    // sphere is never clipped. It centers the city in the strip left
+    // visible above the sheet and grows until the sphere covers the
+    // whole viewport. flyBack() reverses the journey on close.
+    const el = { scale: 1, tx: 0, ty: 0 };
+    const setEl = (scale, tx, ty) => {
+      Object.assign(el, { scale, tx, ty });
+      canvas.style.transform = `translate(${tx}px, ${ty}px) scale(${scale})`;
     };
 
     apiRef.current.flyTo = (city, done) => {
       const [lat, lon] = CITIES[city];
       canvas.classList.add('globe-flight');
-      const s0 = elScale;
+      const from = { ...el };
+
+      // Anchor: where the city should land — centered in the region
+      // the sheet leaves open (top ~38% of the viewport)
+      const ax = window.innerWidth / 2;
+      const ay = window.innerHeight * 0.19;
+      const rect = canvas.getBoundingClientRect();
+      const targetTx = from.tx + (ax - (rect.left + rect.width / 2));
+      const targetTy = from.ty + (ay - (rect.top + rect.height / 2));
+
+      // Sphere must cover the farthest viewport corner from the anchor
+      const maxDist = Math.max(
+        Math.hypot(ax, ay),
+        Math.hypot(window.innerWidth - ax, ay),
+        Math.hypot(ax, window.innerHeight - ay),
+        Math.hypot(window.innerWidth - ax, window.innerHeight - ay),
+      );
+      const cover = (maxDist * 2 * 1.05) / px;
+
       animateState(
-        { phi: phiFor(lon), theta: thetaFor(lat), scale: 1.5 },
+        { phi: phiFor(lon), theta: thetaFor(lat) },
         900,
         done,
-        (eased) => setElScale(s0 + (2.4 - s0) * eased),
+        (eased) => setEl(
+          from.scale + (cover - from.scale) * eased,
+          from.tx + (targetTx - from.tx) * eased,
+          from.ty + (targetTy - from.ty) * eased,
+        ),
       );
     };
 
     apiRef.current.flyBack = (done) => {
-      const s0 = elScale;
+      const from = { ...el };
       animateState(
         { ...rest },
         800,
@@ -149,7 +172,11 @@ const WorkGlobe = forwardRef(function WorkGlobe(
           canvas.classList.remove('globe-flight');
           done?.();
         },
-        (eased) => setElScale(s0 + (1 - s0) * eased),
+        (eased) => setEl(
+          from.scale + (1 - from.scale) * eased,
+          from.tx * (1 - eased),
+          from.ty * (1 - eased),
+        ),
       );
     };
 

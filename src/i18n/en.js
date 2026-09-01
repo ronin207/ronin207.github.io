@@ -53,6 +53,28 @@ const en = {
     loc_singapore: 'AIFT — Singapore',
   },
 
+  // Cities (globe navigation)
+  locations: {
+    explore: 'Two cities, one line of work. Choose one.',
+    tokyo: {
+      name: 'Tokyo',
+      button: 'Tokyo — Waseda University',
+      role: 'Waseda University · Sako Laboratory',
+      period: 'Sep 2020 — present',
+      summary: 'Graduate research in cryptography and digital identity at Waseda University, alongside LLM engineering, teaching, and AI consulting work across Tokyo.',
+    },
+    singapore: {
+      name: 'Singapore',
+      button: 'Singapore — AIFT',
+      role: 'AIFT · AI Security Research',
+      period: '2018 – 2020 · Mar 2026 — present',
+      summary: 'AI security research at AIFT: threat models, evaluation criteria, and benchmarks for LLM-based systems. Earlier: service in the Republic of Singapore Air Force (2018–2020).',
+    },
+    work_label: 'Work from this city',
+    next: 'Next',
+    close: 'Close',
+  },
+
   // Contact
   contact: {
     title: 'Contact',

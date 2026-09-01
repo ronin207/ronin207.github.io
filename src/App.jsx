@@ -22,6 +22,7 @@ const LiquidLens = () => (
 
 const Cv = lazy(() => import('./pages/Cv'));
 const ProjectDetail = lazy(() => import('./pages/ProjectDetail'));
+const LocationDetail = lazy(() => import('./pages/LocationDetail'));
 const NotFound = lazy(() => import('./pages/NotFound'));
 
 const ThemeToggle = ({ theme, setTheme }) => {
@@ -210,6 +211,7 @@ function AppInner() {
                 <Route path="/" element={<Home />} />
                 <Route path="/cv" element={<Cv />} />
                 <Route path="/projects/:slug" element={<ProjectDetail />} />
+                <Route path="/work/:city" element={<LocationDetail />} />
                 <Route path="*" element={<NotFound />} />
               </Routes>
             </PageTransition>

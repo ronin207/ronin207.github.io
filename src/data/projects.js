@@ -4,6 +4,7 @@
 const projects = [
   {
     slug: 'ai-identity-security',
+    location: 'singapore',
     title: 'AI Identity Security',
     category: 'AI Security',
     year: '2026',
@@ -25,6 +26,7 @@ const projects = [
   },
   {
     slug: 'ontovc',
+    location: 'tokyo',
     title: 'OntoVC',
     category: 'Cryptographic Protocols',
     year: '2025',
@@ -48,6 +50,7 @@ const projects = [
   },
   {
     slug: 'pq-anonymous-credentials',
+    location: 'tokyo',
     title: 'Post-Quantum Anonymous Credentials',
     category: 'Cryptographic Protocols',
     year: '2025',
@@ -70,6 +73,7 @@ const projects = [
   },
   {
     slug: 'verifiable-credentials-wallet',
+    location: 'tokyo',
     title: 'Verifiable Credentials Wallet',
     category: 'Privacy & Identity',
     year: '2025',
@@ -94,6 +98,7 @@ const projects = [
   },
   {
     slug: 'security-agent',
+    location: 'tokyo',
     title: 'LLM Security Agent',
     category: 'AI Security',
     year: '2025',
@@ -117,6 +122,7 @@ const projects = [
   },
   {
     slug: 'kiwitales',
+    location: 'tokyo',
     title: 'KiwiTales',
     category: 'Generative AI',
     year: '2024',

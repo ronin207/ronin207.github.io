@@ -1,20 +1,24 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, forwardRef, useImperativeHandle } from 'react';
 import createGlobe from 'cobe';
 
 /*
  * Where the work happens, stated as fact (DESIGN.md §43): Tokyo and
- * Singapore, joined by one thin flight arc. COBE v2 (~5KB WebGL, the
- * quiet dotted globe built at Vercel). Motion is input-driven only:
- * a one-time rotate-in when the globe enters view, drag to spin, and
- * a spring back to the resting view on release — no idle rotation.
+ * Singapore, joined by one thin flight arc. COBE v2 (~5KB WebGL).
+ * Motion is input-driven only: a one-time rotate-in when the globe
+ * enters view, drag to spin, a spring back on release, and flyTo() —
+ * the zoom into a city that precedes navigating to its page.
  */
 
-const SINGAPORE = [1.35, 103.82];
-const TOKYO = [35.68, 139.69];
+const CITIES = {
+  tokyo: [35.68, 139.69],
+  singapore: [1.35, 103.82],
+};
 
-// Face the camera toward ~122°E so both cities and the arc sit in view
-const REST_PHI = Math.PI - ((122 * Math.PI) / 180 - Math.PI / 2);
-const REST_THETA = 0.28;
+const phiFor = (lon) => Math.PI - ((lon * Math.PI) / 180 - Math.PI / 2);
+const thetaFor = (lat) => (lat * Math.PI) / 180;
+
+// Rest view: camera toward ~122°E so both cities and the arc sit in view
+const REST = { phi: phiFor(122), theta: 0.28, scale: 1 };
 
 const PALETTES = {
   light: {
@@ -36,17 +40,26 @@ const PALETTES = {
   },
 };
 
-export default function WorkGlobe() {
+const WorkGlobe = forwardRef(function WorkGlobe(
+  { size = 340, focus = null, interactive = true },
+  ref,
+) {
   const canvasRef = useRef(null);
+  const apiRef = useRef({ flyTo: (_city, done) => done?.() });
 
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
 
     const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    const size = Math.min(canvas.parentElement.clientWidth, 340);
+    const px = Math.min(canvas.parentElement.clientWidth, size);
+    const rest = focus
+      ? { phi: phiFor(CITIES[focus][1]), theta: thetaFor(CITIES[focus][0]), scale: 1 }
+      : REST;
+
     let globe = null;
-    let phi = reducedMotion ? REST_PHI : REST_PHI + 0.55;
+    const state = { ...rest };
+    if (!focus && !reducedMotion) state.phi = rest.phi + 0.55;
     let raf = null;
     let dragging = false;
     let dragStartX = 0;
@@ -58,47 +71,70 @@ export default function WorkGlobe() {
       globe?.destroy();
       globe = createGlobe(canvas, {
         devicePixelRatio: 2,
-        width: size * 2,
-        height: size * 2,
-        phi,
-        theta: REST_THETA,
+        width: px * 2,
+        height: px * 2,
+        phi: state.phi,
+        theta: state.theta,
+        scale: state.scale,
         diffuse: 1.2,
         mapSamples: 16000,
         opacity: 0.95,
         markers: [
-          { location: TOKYO, size: 0.055, id: 'tokyo' },
-          { location: SINGAPORE, size: 0.055, id: 'singapore' },
+          { location: CITIES.tokyo, size: 0.055, id: 'tokyo' },
+          { location: CITIES.singapore, size: 0.055, id: 'singapore' },
         ],
-        arcs: [{ from: SINGAPORE, to: TOKYO }],
+        arcs: [{ from: CITIES.singapore, to: CITIES.tokyo }],
         arcWidth: 0.45,
         arcHeight: 0.22,
         ...PALETTES[isDark() ? 'dark' : 'light'],
       });
     };
 
-    const setPhi = (value) => {
-      phi = value;
-      globe?.update({ phi });
+    const apply = (next) => {
+      Object.assign(state, next);
+      globe?.update({ phi: state.phi, theta: state.theta, scale: state.scale });
     };
 
-    const animateTo = (target, ms) => {
+    const animateState = (target, ms, done, onFrame) => {
       cancelAnimationFrame(raf);
-      if (reducedMotion) { setPhi(target); return; }
-      const from = phi;
+      if (reducedMotion) { apply(target); done?.(); return; }
+      const from = { ...state };
       const start = performance.now();
       const step = (now) => {
         const t = Math.min((now - start) / ms, 1);
         const eased = 1 - Math.pow(1 - t, 3);
-        setPhi(from + (target - from) * eased);
+        const frame = {};
+        for (const k of Object.keys(target)) {
+          frame[k] = from[k] + (target[k] - from[k]) * eased;
+        }
+        apply(frame);
+        onFrame?.(eased);
         if (t < 1) raf = requestAnimationFrame(step);
+        else done?.();
       };
       raf = requestAnimationFrame(step);
+    };
+
+    // The pull-in: the globe itself grows out of its box toward the
+    // viewer (CSS transform) while the camera dives into the city
+    // (cobe state) — unclipped, above the page, then the route changes.
+    apiRef.current.flyTo = (city, done) => {
+      const [lat, lon] = CITIES[city];
+      canvas.classList.add('globe-flight');
+      animateState(
+        { phi: phiFor(lon), theta: thetaFor(lat), scale: 1.5 },
+        900,
+        done,
+        (eased) => {
+          canvas.style.transform = `scale(${1 + 1.4 * eased})`;
+        },
+      );
     };
 
     // Rotate in once when the globe first enters view
     const io = new IntersectionObserver(([entry]) => {
       if (entry.isIntersecting) {
-        animateTo(REST_PHI, 1100);
+        if (!focus) animateState({ phi: rest.phi }, 1100);
         io.disconnect();
       }
     }, { threshold: 0.3 });
@@ -106,26 +142,28 @@ export default function WorkGlobe() {
     const onPointerDown = (e) => {
       dragging = true;
       dragStartX = e.clientX;
-      dragStartPhi = phi;
+      dragStartPhi = state.phi;
       cancelAnimationFrame(raf);
       canvas.style.cursor = 'grabbing';
     };
     const onPointerMove = (e) => {
       if (!dragging) return;
-      setPhi(dragStartPhi + (e.clientX - dragStartX) * 0.005);
+      apply({ phi: dragStartPhi + (e.clientX - dragStartX) * 0.005 });
     };
     const onPointerUp = () => {
       if (!dragging) return;
       dragging = false;
       canvas.style.cursor = 'grab';
-      animateTo(REST_PHI, 700);
+      animateState({ phi: rest.phi }, 700);
     };
 
     build();
     io.observe(canvas);
-    canvas.addEventListener('pointerdown', onPointerDown);
-    window.addEventListener('pointermove', onPointerMove);
-    window.addEventListener('pointerup', onPointerUp);
+    if (interactive) {
+      canvas.addEventListener('pointerdown', onPointerDown);
+      window.addEventListener('pointermove', onPointerMove);
+      window.addEventListener('pointerup', onPointerUp);
+    }
 
     // Rebuild with the other palette when the theme class flips
     const mo = new MutationObserver(build);
@@ -135,19 +173,27 @@ export default function WorkGlobe() {
       io.disconnect();
       mo.disconnect();
       cancelAnimationFrame(raf);
-      canvas.removeEventListener('pointerdown', onPointerDown);
-      window.removeEventListener('pointermove', onPointerMove);
-      window.removeEventListener('pointerup', onPointerUp);
+      if (interactive) {
+        canvas.removeEventListener('pointerdown', onPointerDown);
+        window.removeEventListener('pointermove', onPointerMove);
+        window.removeEventListener('pointerup', onPointerUp);
+      }
       globe?.destroy();
     };
-  }, []);
+  }, [size, focus, interactive]);
+
+  useImperativeHandle(ref, () => ({
+    flyTo: (city, done) => apiRef.current.flyTo(city, done),
+  }), []);
 
   return (
     <canvas
       ref={canvasRef}
-      className="w-full max-w-[340px] aspect-square cursor-grab"
-      style={{ touchAction: 'pan-y' }}
+      className={`w-full aspect-square mx-auto ${interactive ? 'cursor-grab' : ''}`}
+      style={{ maxWidth: size, touchAction: 'pan-y' }}
       aria-label="Globe showing Tokyo and Singapore, connected by a flight arc"
     />
   );
-}
+});
+
+export default WorkGlobe;

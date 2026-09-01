@@ -1,11 +1,12 @@
-import React, { useState, useEffect } from 'react';
-import { ArrowUpRight, Mail, Github, FileText, Linkedin } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import React, { useState, useEffect, useRef } from 'react';
+import { Mail, Github, FileText, Linkedin } from 'lucide-react';
+import { Link, useNavigate } from 'react-router-dom';
 import useInView from '../hooks/useInView.jsx';
 import projects from '../data/projects';
 import usePageTitle from '../hooks/usePageTitle.jsx';
 import { useLang } from '../i18n/LanguageContext.jsx';
 import WorkGlobe from '../components/WorkGlobe';
+import ProjectRow from '../components/ProjectRow';
 
 const FadeIn = ({ children, className = '', delay = 0 }) => {
     const [ref, isInView] = useInView();
@@ -24,32 +25,6 @@ const FadeIn = ({ children, className = '', delay = 0 }) => {
 
 const SectionHeading = ({ children }) => (
     <h2 className="text-sm font-medium text-ink-3 mb-10">{children}</h2>
-);
-
-const ProjectRow = ({ project, viewLabel }) => (
-    <Link
-        to={`/projects/${project.slug}`}
-        className="group block py-10 border-t border-hairline -mx-5 px-5 rounded-2xl hover:bg-surface/70 transition-colors duration-300"
-    >
-        <div className="flex flex-col md:flex-row md:items-baseline md:justify-between gap-1 mb-3">
-            <h3 className="text-xl font-medium tracking-[-0.02em] text-ink group-hover:text-accent transition-colors">
-                {project.title}
-            </h3>
-            <p className="text-xs text-ink-3">
-                {project.year} · {project.category} · {project.status}
-            </p>
-        </div>
-        <p className="text-ink-2 leading-relaxed max-w-2xl mb-1.5">
-            {project.problemShort}
-        </p>
-        <p className="text-ink-2 leading-relaxed max-w-2xl">
-            {project.contributionShort}
-        </p>
-        <span className="mt-4 inline-flex items-center gap-1.5 text-sm text-accent">
-            {viewLabel}
-            <ArrowUpRight size={14} className="transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
-        </span>
-    </Link>
 );
 
 const ResearchPanel = ({ label, title, status, description, facts }) => (
@@ -187,8 +162,17 @@ const ContactForm = () => {
 export default function Home() {
     const { t } = useLang();
     usePageTitle();
+    const navigate = useNavigate();
+    const globeRef = useRef(null);
     const selected = projects.filter((p) => p.selected);
     const other = projects.filter((p) => !p.selected);
+
+    // The pull-in: fly the globe into the city, then arrive on its page
+    const goCity = (city) => {
+        const arrive = () => navigate(`/work/${city}`);
+        if (globeRef.current) globeRef.current.flyTo(city, arrive);
+        else arrive();
+    };
 
     const contactLinks = [
         { href: 'mailto:takumi_ot09@fuji.waseda.jp', icon: Mail, label: 'takumi_ot09@fuji.waseda.jp' },
@@ -198,32 +182,35 @@ export default function Home() {
 
     return (
         <div className="mx-auto max-w-3xl px-6 pt-40 md:pt-52">
-            {/* Hero — restrained landing (DESIGN.md §32, §35); entrance
-                choreography plays on first visit only */}
-            <header id="overview" className="entrance mb-28 md:mb-36">
-                <h1 className="text-5xl md:text-[64px] font-medium tracking-[-0.04em] leading-[1.05] text-ink mb-7">
+            {/* Hero — the globe as the room's centerpiece. Name and
+                statement stay first (DESIGN.md §32); the globe is a lens
+                into the work, never a gate: everything remains reachable
+                by scrolling. Entrance choreography plays on first visit. */}
+            <header id="overview" className="entrance mb-24 md:mb-32 flex flex-col items-center text-center">
+                <h1 className="text-5xl md:text-[64px] font-medium tracking-[-0.04em] leading-[1.05] text-ink mb-6">
                     {t.hero.name}
                 </h1>
-                <p className="text-2xl md:text-[28px] font-light tracking-[-0.015em] leading-snug text-ink mb-6 max-w-xl">
+                <p className="text-2xl md:text-[28px] font-light tracking-[-0.015em] leading-snug text-ink mb-5 max-w-xl">
                     {t.hero.statement}
                 </p>
-                <p className="text-ink-2 leading-relaxed mb-10 max-w-xl">
+                <p className="text-ink-2 leading-relaxed mb-6 max-w-xl">
                     {t.hero.description}
                 </p>
-                <div className="flex items-center gap-4">
-                    <a
-                        href="#work"
-                        className="px-5 py-2.5 text-sm font-medium rounded-xl bg-ink text-canvas hover:opacity-85 active:scale-[0.98] transition-all"
-                    >
-                        {t.hero.cta_primary}
-                    </a>
-                    <a
-                        href="#contact"
-                        className="px-5 py-2.5 text-sm rounded-xl bg-surface border border-hairline text-ink-2 hover:text-ink active:scale-[0.98] transition-all"
-                        style={{ boxShadow: 'var(--shadow-low)' }}
-                    >
-                        {t.hero.cta_secondary}
-                    </a>
+                <div className="w-full flex justify-center">
+                    <WorkGlobe ref={globeRef} size={400} />
+                </div>
+                <p className="text-xs text-ink-3 mt-5 mb-4">{t.locations.explore}</p>
+                <div className="flex flex-wrap justify-center gap-3">
+                    {['tokyo', 'singapore'].map((city) => (
+                        <button
+                            key={city}
+                            onClick={() => goCity(city)}
+                            className="px-5 py-2.5 text-sm rounded-xl bg-surface border border-hairline text-ink-2 hover:text-ink active:scale-[0.98] transition-all"
+                            style={{ boxShadow: 'var(--shadow-low)' }}
+                        >
+                            {t.locations[city].button}
+                        </button>
+                    ))}
                 </div>
             </header>
 
@@ -299,27 +286,16 @@ export default function Home() {
                 <FadeIn>
                     <SectionHeading>{t.sections.philosophy}</SectionHeading>
                 </FadeIn>
-                <div className="grid md:grid-cols-[1fr_300px] gap-12 md:gap-16 items-center">
-                    <FadeIn>
-                        <div className="space-y-5 text-ink-2 leading-relaxed">
-                            <p>{t.philosophy.p1}</p>
-                            <p>{t.philosophy.p2}</p>
-                            <p className="pt-2 text-sm">
-                                <span className="block text-xs text-ink-3 mb-1.5">{t.philosophy.stack_label}</span>
-                                Rust, C++, Python, Swift, LEAN 4, LaTeX, MATLAB, Julia, React
-                            </p>
-                        </div>
-                    </FadeIn>
-                    <FadeIn delay={100}>
-                        <div className="flex flex-col items-center">
-                            <WorkGlobe />
-                            <div className="mt-4 space-y-1 text-center">
-                                <p className="text-xs text-ink-3">{t.philosophy.loc_tokyo}</p>
-                                <p className="text-xs text-ink-3">{t.philosophy.loc_singapore}</p>
-                            </div>
-                        </div>
-                    </FadeIn>
-                </div>
+                <FadeIn>
+                    <div className="max-w-2xl space-y-5 text-ink-2 leading-relaxed">
+                        <p>{t.philosophy.p1}</p>
+                        <p>{t.philosophy.p2}</p>
+                        <p className="pt-2 text-sm">
+                            <span className="block text-xs text-ink-3 mb-1.5">{t.philosophy.stack_label}</span>
+                            Rust, C++, Python, Swift, LEAN 4, LaTeX, MATLAB, Julia, React
+                        </p>
+                    </div>
+                </FadeIn>
             </section>
 
             {/* Contact */}

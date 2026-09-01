@@ -53,6 +53,28 @@ const ja = {
     loc_singapore: 'AIFT — シンガポール',
   },
 
+  // Cities (globe navigation)
+  locations: {
+    explore: '二つの都市、一つの研究。選んでください。',
+    tokyo: {
+      name: '東京',
+      button: '東京 — 早稲田大学',
+      role: '早稲田大学 · 佐古研究室',
+      period: '2020年9月 — 現在',
+      summary: '早稲田大学での暗号とデジタルアイデンティティの研究に加え、東京でのLLMエンジニアリング、ティーチング、AIコンサルティングに従事。',
+    },
+    singapore: {
+      name: 'シンガポール',
+      button: 'シンガポール — AIFT',
+      role: 'AIFT · AIセキュリティ研究',
+      period: '2018 – 2020 · 2026年3月 — 現在',
+      summary: 'AIFTでのAIセキュリティ研究：LLMベースのシステムに対する脅威モデル、評価基準、ベンチマークの開発。それ以前はシンガポール空軍にて服務（2018–2020）。',
+    },
+    work_label: 'この都市での研究・制作',
+    next: '次へ',
+    close: '閉じる',
+  },
+
   // Contact
   contact: {
     title: '連絡先',

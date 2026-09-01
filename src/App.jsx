@@ -160,12 +160,13 @@ function AppInner() {
         <CityGlow />
         <CommandPalette isOpen={paletteOpen} onClose={() => setPaletteOpen(false)} />
 
-        {/* Floating glass navigation (DESIGN.md §4.2, §10) */}
-        <header className="fixed top-0 left-0 w-full z-50 px-4 pt-4">
-          <nav
-            ref={navRef}
-            className={`glass sheen ${scrolled ? 'glass-deep' : ''} max-w-3xl mx-auto rounded-2xl px-4 md:px-5 py-2.5 flex items-center justify-between transition-shadow duration-500`}
-          >
+        {/* Slim full-width glass bar (DESIGN.md §4.2, §10; the header
+            shape shared by every measured premium system) */}
+        <header
+          ref={navRef}
+          className={`glass-bar sheen ${scrolled ? 'glass-deep' : ''} fixed top-0 left-0 w-full z-50 transition-shadow duration-500`}
+        >
+          <nav className="max-w-3xl mx-auto px-6 h-14 flex items-center justify-between">
             <Link to="/" className="text-sm font-medium tracking-tight text-ink">
               Takumi Otsuka
             </Link>

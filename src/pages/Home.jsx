@@ -31,7 +31,7 @@ const ProjectRow = ({ project, viewLabel }) => (
         className="group block py-10 border-t border-hairline -mx-5 px-5 rounded-2xl hover:bg-surface/70 transition-colors duration-300"
     >
         <div className="flex flex-col md:flex-row md:items-baseline md:justify-between gap-1 mb-3">
-            <h3 className="text-xl font-medium text-ink group-hover:text-accent transition-colors">
+            <h3 className="text-xl font-medium tracking-[-0.02em] text-ink group-hover:text-accent transition-colors">
                 {project.title}
             </h3>
             <p className="text-xs text-ink-3">
@@ -173,12 +173,12 @@ export default function Home() {
             {/* Hero — restrained landing (DESIGN.md §32, §35) */}
             <header id="overview" className="mb-28 md:mb-36">
                 <FadeIn>
-                    <h1 className="text-4xl md:text-5xl font-medium tracking-tight text-ink mb-6">
+                    <h1 className="text-5xl md:text-[64px] font-medium tracking-[-0.04em] leading-[1.05] text-ink mb-7">
                         {t.hero.name}
                     </h1>
                 </FadeIn>
                 <FadeIn delay={80}>
-                    <p className="text-xl md:text-2xl font-light text-ink leading-relaxed mb-6 max-w-xl">
+                    <p className="text-2xl md:text-[28px] font-light tracking-[-0.015em] leading-snug text-ink mb-6 max-w-xl">
                         {t.hero.statement}
                     </p>
                 </FadeIn>
@@ -197,7 +197,8 @@ export default function Home() {
                         </a>
                         <a
                             href="#contact"
-                            className="glass px-5 py-2.5 text-sm rounded-xl text-ink-2 hover:text-ink active:scale-[0.98] transition-all"
+                            className="px-5 py-2.5 text-sm rounded-xl bg-surface border border-hairline text-ink-2 hover:text-ink active:scale-[0.98] transition-all"
+                            style={{ boxShadow: 'var(--shadow-low)' }}
                         >
                             {t.hero.cta_secondary}
                         </a>

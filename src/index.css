@@ -10,40 +10,46 @@
  * desaturated silver-blue accent. Dark mode is deep cool graphite,
  * never pure black or neon.
  */
+/* Values calibrated against measured systems: Apple (ink #1d1d1f,
+   secondary #86868b, glass = canvas at 40–80% + blur(20px), no shadow),
+   Linear (alpha borders #ffffff0d/14, header bg at 80%, shadow scale
+   0 2px 4px/10% · 0 4px 24px/20%), Vercel (#fafafa canvas, #171717 ink). */
 :root {
-    --canvas: #f6f8fa;
+    --canvas: #f7f8fa;
     --surface: #ffffff;
-    --mist: #edf0f5;
-    --ink: #16181d;
-    --ink-2: #4c515a;
-    --ink-3: #868d99;
-    --hairline: #e1e5ec;
+    --mist: #eef0f4;
+    --ink: #17181c;
+    --ink-2: #50545c;
+    --ink-3: #878d97;
+    --hairline: rgba(23, 25, 30, 0.08);
+    --hairline-strong: rgba(23, 25, 30, 0.14);
     --accent: #4a5fc0;
     --accent-strong: #3a4ea8;
     --accent-soft: #e9edf9;
-    --glass: rgba(255, 255, 255, 0.55);
-    --glass-border: rgba(22, 24, 29, 0.08);
-    --glass-highlight: rgba(255, 255, 255, 0.65);
-    --glass-shadow: rgba(22, 24, 29, 0.07);
+    --glass: rgba(247, 248, 250, 0.78);
+    --glass-highlight: rgba(255, 255, 255, 0.6);
+    --shadow-low: 0 2px 4px rgba(15, 17, 21, 0.06);
+    --shadow-medium: 0 4px 24px rgba(15, 17, 21, 0.10);
     --sheen: rgba(255, 255, 255, 0.55);
 }
 
 .dark {
-    --canvas: #121317;
-    --surface: #191b20;
-    --mist: #1f2127;
-    --ink: #eceef2;
+    --canvas: #0f1014;
+    --surface: #16171c;
+    --mist: #1c1e24;
+    --ink: #edeef2;
     --ink-2: #a3a9b4;
-    --ink-3: #6c727e;
-    --hairline: #272a32;
+    --ink-3: #6f7580;
+    --hairline: rgba(255, 255, 255, 0.08);
+    --hairline-strong: rgba(255, 255, 255, 0.14);
     --accent: #94a6ee;
     --accent-strong: #adbcf4;
     --accent-soft: rgba(148, 166, 238, 0.12);
-    --glass: rgba(22, 24, 29, 0.55);
-    --glass-border: rgba(236, 238, 242, 0.09);
-    --glass-highlight: rgba(255, 255, 255, 0.08);
-    --glass-shadow: rgba(0, 0, 0, 0.35);
-    --sheen: rgba(255, 255, 255, 0.10);
+    --glass: rgba(15, 16, 20, 0.78);
+    --glass-highlight: rgba(255, 255, 255, 0.07);
+    --shadow-low: 0 2px 4px rgba(0, 0, 0, 0.25);
+    --shadow-medium: 0 4px 24px rgba(0, 0, 0, 0.35);
+    --sheen: rgba(255, 255, 255, 0.09);
 }
 
 @theme inline {
@@ -99,34 +105,41 @@
     }
 }
 
-/* Floating glass — reserved for surfaces that conceptually float above
-   content: navigation, command palette, overlays. Not for static cards. */
+/* Glass — reserved for surfaces that conceptually float above content.
+   Recipe measured from Apple and Linear headers: canvas at ~78% opacity,
+   blur(20px), hairline separation, no drop shadow at rest. */
 .glass {
     background-color: var(--glass);
-    -webkit-backdrop-filter: blur(18px) saturate(1.8);
-    backdrop-filter: blur(18px) saturate(1.8);
-    border: 1px solid var(--glass-border);
+    -webkit-backdrop-filter: blur(20px) saturate(1.5);
+    backdrop-filter: blur(20px) saturate(1.5);
+    border: 1px solid var(--hairline);
     box-shadow:
         inset 0 1px 0 var(--glass-highlight),
-        inset 0 -1px 0 color-mix(in srgb, var(--glass-highlight) 40%, transparent),
-        0 8px 32px var(--glass-shadow);
+        var(--shadow-medium);
+}
+
+/* The navigation bar variant: full-width, hairline bottom only —
+   the shape every measured premium header shares. */
+.glass-bar {
+    background-color: var(--glass);
+    -webkit-backdrop-filter: blur(20px) saturate(1.5);
+    backdrop-filter: blur(20px) saturate(1.5);
+    border-bottom: 1px solid var(--hairline);
 }
 
 /* Refraction: displace the backdrop through a noise field so the glass
    visibly bends what passes beneath it (DESIGN.md §25 "soft refraction").
    The .refract-ok class is set only where url() filters render in
    backdrop-filter (Chromium); everywhere else the plain blur above holds. */
-.refract-ok .glass {
-    backdrop-filter: blur(18px) saturate(1.8) url(#liquid-lens);
+.refract-ok .glass,
+.refract-ok .glass-bar {
+    backdrop-filter: blur(20px) saturate(1.5) url(#liquid-lens);
 }
 
 /* Depth transition while content passes underneath (DESIGN.md §25) */
 .glass-deep {
-    background-color: color-mix(in srgb, var(--surface) 62%, transparent);
-    box-shadow:
-        inset 0 1px 0 var(--glass-highlight),
-        inset 0 -1px 0 color-mix(in srgb, var(--glass-highlight) 40%, transparent),
-        0 14px 44px var(--glass-shadow);
+    border-bottom-color: var(--hairline-strong);
+    box-shadow: var(--shadow-low);
 }
 
 /* Gentle specular highlight that follows the pointer (DESIGN.md §25) */

@@ -37,7 +37,7 @@ export default function ProjectDetail() {
         <p className="text-xs text-ink-3 mb-3">
           {project.category} · {project.year} · {project.status}
         </p>
-        <h1 className="text-3xl md:text-5xl font-medium tracking-tight text-ink mb-6">
+        <h1 className="text-4xl md:text-[56px] font-medium tracking-[-0.04em] leading-[1.05] text-ink mb-6">
           {project.title}
         </h1>
         <p className="text-lg md:text-xl font-light text-ink leading-relaxed max-w-2xl">

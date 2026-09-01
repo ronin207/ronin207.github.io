@@ -20,6 +20,29 @@ const thetaFor = (lat) => (lat * Math.PI) / 180;
 // Rest view: camera toward ~122°E so both cities and the arc sit in view
 const REST = { phi: phiFor(122), theta: 0.28, scale: 1 };
 
+// Where a city's marker sits on the canvas at the rest view, as
+// fractions of the canvas box — used to place the click hotspots.
+// SPHERE_R is the sphere's radius as a fraction of the canvas,
+// calibrated against the rendered globe.
+const SPHERE_R = 0.45;
+
+const restHotspot = (lat, lon) => {
+  const la = (lat * Math.PI) / 180;
+  const lo = (lon * Math.PI) / 180;
+  const c = (3 * Math.PI) / 2 - REST.phi; // longitude facing the camera
+  const x = Math.cos(la) * Math.sin(lo);
+  const y = Math.sin(la);
+  const z = Math.cos(la) * Math.cos(lo);
+  const xr = x * Math.cos(c) - z * Math.sin(c);
+  const zr = x * Math.sin(c) + z * Math.cos(c);
+  const yr = y * Math.cos(REST.theta) - zr * Math.sin(REST.theta);
+  return { fx: 0.5 + xr * SPHERE_R, fy: 0.5 - yr * SPHERE_R };
+};
+
+const HOTSPOTS = Object.fromEntries(
+  Object.entries(CITIES).map(([city, [lat, lon]]) => [city, restHotspot(lat, lon)]),
+);
+
 const PALETTES = {
   light: {
     dark: 0,
@@ -41,7 +64,7 @@ const PALETTES = {
 };
 
 const WorkGlobe = forwardRef(function WorkGlobe(
-  { size = 340, focus = null, interactive = true },
+  { size = 340, focus = null, interactive = true, onCityClick = null, cityLabels = null, engaged = false },
   ref,
 ) {
   const canvasRef = useRef(null);
@@ -129,20 +152,15 @@ const WorkGlobe = forwardRef(function WorkGlobe(
       canvas.style.transform = `translate(${tx}px, ${ty}px) scale(${scale})`;
     };
 
-    apiRef.current.flyTo = (city, done) => {
-      const [lat, lon] = CITIES[city];
-      canvas.classList.add('globe-flight');
-      const from = { ...el };
-
-      // Anchor: where the city should land — centered in the region
-      // the sheet leaves open (top ~38% of the viewport)
+    // Anchor: where the city should land — centered in the region the
+    // sheet leaves open (top ~38% of the viewport) — plus the element
+    // translation and cover scale that put the sphere over everything.
+    const flightTarget = (from) => {
       const ax = window.innerWidth / 2;
       const ay = window.innerHeight * 0.19;
       const rect = canvas.getBoundingClientRect();
       const targetTx = from.tx + (ax - (rect.left + rect.width / 2));
       const targetTy = from.ty + (ay - (rect.top + rect.height / 2));
-
-      // Sphere must cover the farthest viewport corner from the anchor
       const maxDist = Math.max(
         Math.hypot(ax, ay),
         Math.hypot(window.innerWidth - ax, ay),
@@ -150,6 +168,14 @@ const WorkGlobe = forwardRef(function WorkGlobe(
         Math.hypot(window.innerWidth - ax, window.innerHeight - ay),
       );
       const cover = (maxDist * 2 * 1.05) / px;
+      return { targetTx, targetTy, cover };
+    };
+
+    apiRef.current.flyTo = (city, done) => {
+      const [lat, lon] = CITIES[city];
+      canvas.classList.add('globe-flight');
+      const from = { ...el };
+      const { targetTx, targetTy, cover } = flightTarget(from);
 
       animateState(
         { phi: phiFor(lon), theta: thetaFor(lat) },
@@ -161,6 +187,16 @@ const WorkGlobe = forwardRef(function WorkGlobe(
           from.ty + (targetTy - from.ty) * eased,
         ),
       );
+    };
+
+    // Instant arrival — used when returning to an already-open city
+    apiRef.current.jumpTo = (city) => {
+      const [lat, lon] = CITIES[city];
+      canvas.classList.add('globe-flight');
+      cancelAnimationFrame(raf);
+      apply({ phi: phiFor(lon), theta: thetaFor(lat) });
+      const { targetTx, targetTy, cover } = flightTarget({ ...el });
+      setEl(cover, targetTx, targetTy);
     };
 
     apiRef.current.flyBack = (done) => {
@@ -189,6 +225,7 @@ const WorkGlobe = forwardRef(function WorkGlobe(
     }, { threshold: 0.3 });
 
     const onPointerDown = (e) => {
+      if (canvas.classList.contains('globe-flight')) return;
       dragging = true;
       dragStartX = e.clientX;
       dragStartPhi = state.phi;
@@ -234,15 +271,35 @@ const WorkGlobe = forwardRef(function WorkGlobe(
   useImperativeHandle(ref, () => ({
     flyTo: (city, done) => apiRef.current.flyTo(city, done),
     flyBack: (done) => apiRef.current.flyBack(done),
+    jumpTo: (city) => apiRef.current.jumpTo(city),
   }), []);
 
   return (
-    <canvas
-      ref={canvasRef}
-      className={`w-full aspect-square mx-auto ${interactive ? 'cursor-grab' : ''}`}
-      style={{ maxWidth: size, touchAction: 'pan-y' }}
-      aria-label="Globe showing Tokyo and Singapore, connected by a flight arc"
-    />
+    <div className="relative w-full mx-auto" style={{ maxWidth: size }}>
+      <canvas
+        ref={canvasRef}
+        className={`w-full aspect-square ${interactive ? 'cursor-grab' : ''}`}
+        style={{ touchAction: 'pan-y' }}
+        aria-label="Globe showing Tokyo and Singapore, connected by a flight arc"
+      />
+      {/* The marker dots are the controls (hidden while a city is open) */}
+      {interactive && onCityClick && !engaged && Object.keys(CITIES).map((city) => {
+        const { fx, fy } = HOTSPOTS[city];
+        return (
+          <button
+            key={city}
+            onClick={() => onCityClick(city)}
+            aria-label={cityLabels?.[city] ?? city}
+            className="group absolute w-11 h-11 -translate-x-1/2 -translate-y-1/2 rounded-full cursor-pointer"
+            style={{ left: `${fx * 100}%`, top: `${fy * 100}%` }}
+          >
+            <span className="absolute left-1/2 -translate-x-1/2 top-full text-xs text-ink-2 opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none">
+              {cityLabels?.[city] ?? city}
+            </span>
+          </button>
+        );
+      })}
+    </div>
   );
 });
 

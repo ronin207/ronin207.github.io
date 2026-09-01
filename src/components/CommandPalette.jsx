@@ -4,11 +4,9 @@ import { Search, ArrowRight, FileText, Home, User, Mail, Briefcase, BookOpen } f
 
 const ITEMS = [
   { id: 'home', label: 'Home', section: 'Navigation', icon: Home, action: { type: 'navigate', to: '/' } },
-  { id: 'work', label: 'Selected work', section: 'Navigation', icon: BookOpen, action: { type: 'hash', to: '/#work' } },
-  { id: 'contact', label: 'Contact', section: 'Navigation', icon: Mail, action: { type: 'hash', to: '/#contact' } },
   { id: 'cv', label: 'Curriculum vitae', section: 'Navigation', icon: FileText, action: { type: 'navigate', to: '/cv' } },
-  { id: 'tokyo', label: 'Tokyo — Waseda University', section: 'Cities', icon: Home, action: { type: 'navigate', to: '/work/tokyo' } },
-  { id: 'singapore', label: 'Singapore — AIFT', section: 'Cities', icon: Home, action: { type: 'navigate', to: '/work/singapore' } },
+  { id: 'tokyo', label: 'Tokyo — Waseda University', section: 'Cities', icon: BookOpen, action: { type: 'navigate', to: '/work/tokyo' } },
+  { id: 'singapore', label: 'Singapore — AIFT', section: 'Cities', icon: BookOpen, action: { type: 'navigate', to: '/work/singapore' } },
   { id: 'ai-identity', label: 'AI Identity Security', section: 'Research', icon: Briefcase, action: { type: 'navigate', to: '/projects/ai-identity-security' } },
   { id: 'ontovc', label: 'OntoVC', section: 'Research', icon: Briefcase, action: { type: 'navigate', to: '/projects/ontovc' } },
   { id: 'pq-creds', label: 'Post-Quantum Anonymous Credentials', section: 'Research', icon: Briefcase, action: { type: 'navigate', to: '/projects/pq-anonymous-credentials' } },

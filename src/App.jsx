@@ -146,11 +146,6 @@ function AppInner() {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, []);
 
-  const navItems = [
-    { key: 'work', label: t.nav.research },
-    { key: 'contact', label: t.nav.contact },
-  ];
-
   return (
     <>
       <ScrollToTop />
@@ -174,14 +169,14 @@ function AppInner() {
 
             <div className="flex items-center gap-2 md:gap-3">
               <div className="hidden md:flex items-center gap-1 mr-2">
-                {navItems.map((item) => (
-                  <a
-                    key={item.key}
-                    href={`/#${item.key}`}
+                {['tokyo', 'singapore'].map((city) => (
+                  <Link
+                    key={city}
+                    to={`/work/${city}`}
                     className="px-3 py-1.5 rounded-full text-sm text-ink-2 hover:text-ink hover:bg-mist transition-colors"
                   >
-                    {item.label}
-                  </a>
+                    {t.locations[city].name}
+                  </Link>
                 ))}
                 <Link
                   to="/cv"

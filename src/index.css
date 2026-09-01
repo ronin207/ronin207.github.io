@@ -166,6 +166,7 @@
 .entrance > *:nth-child(4) { animation-delay: 240ms; }
 .entrance > *:nth-child(5) { animation-delay: 320ms; }
 .entrance > *:nth-child(6) { animation-delay: 400ms; }
+.entrance > *:nth-child(7) { animation-delay: 480ms; }
 
 .revisit .entrance > * {
     animation: none;

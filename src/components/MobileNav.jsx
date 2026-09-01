@@ -25,9 +25,9 @@ const MobileNav = ({ onPaletteOpen }) => {
   }, [isOpen]);
 
   const navItems = [
-    { label: t.nav.overview, href: '/#overview' },
-    { label: t.nav.research, href: '/#work' },
-    { label: t.nav.contact, href: '/#contact' },
+    { label: t.nav.overview, href: '/', isRoute: true },
+    { label: t.locations.tokyo.name, href: '/work/tokyo', isRoute: true },
+    { label: t.locations.singapore.name, href: '/work/singapore', isRoute: true },
     { label: 'CV', href: '/cv', isRoute: true },
   ];
 

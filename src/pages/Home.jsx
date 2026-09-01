@@ -2,55 +2,10 @@ import React, { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { Mail, Github, FileText, Linkedin, X, ArrowRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import useInView from '../hooks/useInView.jsx';
-import projects from '../data/projects';
 import usePageTitle from '../hooks/usePageTitle.jsx';
 import { useLang } from '../i18n/LanguageContext.jsx';
 import WorkGlobe from '../components/WorkGlobe';
-import ProjectRow from '../components/ProjectRow';
 import CityContent from '../components/CityContent';
-
-const FadeIn = ({ children, className = '', delay = 0 }) => {
-    const [ref, isInView] = useInView();
-    return (
-        <div
-            ref={ref}
-            className={`transition-all duration-500 ease-out ${
-                isInView ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-2'
-            } ${className}`}
-            style={{ transitionDelay: `${delay}ms` }}
-        >
-            {children}
-        </div>
-    );
-};
-
-const SectionHeading = ({ children }) => (
-    <h2 className="text-sm font-medium text-ink-3 mb-10">{children}</h2>
-);
-
-const ResearchPanel = ({ label, title, status, description, facts }) => (
-    <div className="bg-surface/80 backdrop-blur-md border border-hairline rounded-2xl p-6 md:p-8">
-        <div className="flex flex-col md:flex-row md:items-baseline md:justify-between gap-2 mb-5">
-            <div>
-                <p className="text-xs text-ink-3 mb-1">{label}</p>
-                <h3 className="text-xl font-medium text-ink">{title}</h3>
-            </div>
-            <span className="text-xs text-ink-3">{status}</span>
-        </div>
-
-        <p className="text-ink-2 leading-relaxed mb-7 max-w-2xl">{description}</p>
-
-        <dl className="grid grid-cols-1 md:grid-cols-3 gap-x-8 gap-y-4 pt-5 border-t border-hairline">
-            {facts.map(([term, value]) => (
-                <div key={term}>
-                    <dt className="text-xs text-ink-3 mb-1">{term}</dt>
-                    <dd className="text-sm text-ink">{value}</dd>
-                </div>
-            ))}
-        </dl>
-    </div>
-);
 
 // The room is in Tokyo; the clock in it is real (benji.org pattern —
 // a live, factual detail rather than decorative motion).
@@ -79,100 +34,26 @@ const TokyoTime = () => {
     return <span>{lang === 'ja' ? `東京 ${time}` : `${time} in Tokyo`}</span>;
 };
 
-const Field = ({ label, children }) => (
-    <label className="block">
-        <span className="block text-xs text-ink-3 mb-1.5">{label}</span>
-        {children}
-    </label>
-);
-
-const ContactForm = () => {
-    const { t } = useLang();
-    const [formData, setFormData] = useState({ name: '', email: '', message: '' });
-    const [status, setStatus] = useState('idle'); // idle | sending | sent | error
-
-    const handleSubmit = async (e) => {
-        e.preventDefault();
-        setStatus('sending');
-
-        try {
-            const res = await fetch('https://formspree.io/f/YOUR_FORM_ID', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(formData),
-            });
-
-            if (res.ok) {
-                setStatus('sent');
-                setFormData({ name: '', email: '', message: '' });
-                setTimeout(() => setStatus('idle'), 4000);
-            } else {
-                setStatus('error');
-            }
-        } catch {
-            setStatus('error');
-        }
-    };
-
-    const inputClasses = 'w-full px-4 py-2.5 text-sm rounded-xl bg-mist border border-hairline text-ink placeholder-ink-3 outline-none transition-colors focus:border-accent';
-
-    return (
-        <form onSubmit={handleSubmit} className="space-y-5 max-w-lg">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                <Field label={t.contact.form.name}>
-                    <input
-                        type="text"
-                        required
-                        value={formData.name}
-                        onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                        className={inputClasses}
-                    />
-                </Field>
-                <Field label={t.contact.form.email}>
-                    <input
-                        type="email"
-                        required
-                        value={formData.email}
-                        onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                        className={inputClasses}
-                    />
-                </Field>
-            </div>
-            <Field label={t.contact.form.message}>
-                <textarea
-                    required
-                    rows={4}
-                    value={formData.message}
-                    onChange={(e) => setFormData({ ...formData, message: e.target.value })}
-                    className={`${inputClasses} resize-none`}
-                />
-            </Field>
-            <button
-                type="submit"
-                disabled={status === 'sending'}
-                className="px-6 py-2.5 text-sm font-medium rounded-xl bg-ink text-canvas hover:opacity-85 disabled:opacity-50 transition-opacity"
-            >
-                {status === 'sending' ? t.contact.form.sending : status === 'sent' ? t.contact.form.sent : t.contact.form.send}
-            </button>
-            {status === 'error' && (
-                <p className="text-sm text-ink-2">{t.contact.form.error}</p>
-            )}
-        </form>
-    );
-};
-
 export default function Home() {
     const { t } = useLang();
     usePageTitle();
     const globeRef = useRef(null);
-    const selected = projects.filter((p) => p.selected);
-    const other = projects.filter((p) => !p.selected);
 
     // City view: the globe stays on screen; the city's content is a
-    // sheet that scrolls up over it. No route change, no hard cut.
-    const [cityView, setCityView] = useState(null); // null | 'tokyo' | 'singapore'
-    const [sheetState, setSheetState] = useState('closed'); // closed | open | closing
-    const [engaged, setEngaged] = useState(false); // globe is flying or a city is open
+    // sheet that scrolls up over it. Opened by clicking a marker dot.
+    // Returning within the session restores the city that was open;
+    // a fresh visit starts at the calm rest view.
+    const [initialCity] = useState(() => {
+        try {
+            const saved = sessionStorage.getItem('cityView');
+            return saved === 'tokyo' || saved === 'singapore' ? saved : null;
+        } catch {
+            return null;
+        }
+    });
+    const [cityView, setCityView] = useState(initialCity); // null | 'tokyo' | 'singapore'
+    const [sheetState, setSheetState] = useState(initialCity ? 'open' : 'closed'); // closed | open | closing
+    const [engaged, setEngaged] = useState(!!initialCity); // globe is flying or a city is open
     const flying = useRef(false);
 
     const goCity = (city) => {
@@ -183,12 +64,14 @@ export default function Home() {
             flying.current = false;
             setCityView(city);
             setSheetState('open');
+            try { sessionStorage.setItem('cityView', city); } catch { /* fine */ }
         });
     };
 
     const closeCity = () => {
         if (flying.current) return;
         setSheetState('closing');
+        try { sessionStorage.removeItem('cityView'); } catch { /* fine */ }
         setTimeout(() => {
             setSheetState('closed');
             setCityView(null);
@@ -206,9 +89,17 @@ export default function Home() {
                 flying.current = false;
                 setCityView(nextCity);
                 setSheetState('open');
+                try { sessionStorage.setItem('cityView', nextCity); } catch { /* fine */ }
             });
         }, 280);
     };
+
+    // Place the globe over the restored city after first paint
+    useEffect(() => {
+        if (initialCity) {
+            requestAnimationFrame(() => globeRef.current?.jumpTo(initialCity));
+        }
+    }, [initialCity]);
 
     // While the sheet is up: lock the page scroll, close on Escape
     useEffect(() => {
@@ -222,16 +113,17 @@ export default function Home() {
         };
     }, [cityView]);
 
+    const nextOf = cityView === 'tokyo' ? 'singapore' : 'tokyo';
+    const fade = `transition-opacity duration-500 ${engaged ? 'opacity-0' : ''}`;
+
     const contactLinks = [
-        { href: 'mailto:takumi_ot09@fuji.waseda.jp', icon: Mail, label: 'takumi_ot09@fuji.waseda.jp' },
-        { href: 'https://github.com/ronin207', icon: Github, label: 'github.com/ronin207', external: true },
-        { href: 'https://linkedin.com/in/takumi-otsuka', icon: Linkedin, label: 'linkedin.com/in/takumi-otsuka', external: true },
+        { href: 'mailto:takumi_ot09@fuji.waseda.jp', icon: Mail, label: 'Email' },
+        { href: 'https://github.com/ronin207', icon: Github, label: 'GitHub', external: true },
+        { href: 'https://linkedin.com/in/takumi-otsuka', icon: Linkedin, label: 'LinkedIn', external: true },
     ];
 
-    const nextOf = cityView === 'tokyo' ? 'singapore' : 'tokyo';
-
     return (
-        <div className="mx-auto max-w-3xl px-6 pt-40 md:pt-52">
+        <div className="mx-auto max-w-3xl px-6 pt-32 md:pt-36 pb-10 min-h-screen">
             {/* City sheet — scrolls up over the zoomed globe. The spacer
                 at the top keeps the city in view; clicking it closes. */}
             {cityView && createPortal(
@@ -273,165 +165,52 @@ export default function Home() {
                 </div>,
                 document.body
             )}
-            {/* Hero — the globe as the room's centerpiece. Name and
-                statement stay first (DESIGN.md §32); the globe is a lens
-                into the work, never a gate: everything remains reachable
-                by scrolling. Entrance choreography plays on first visit. */}
-            <header id="overview" className="entrance mb-24 md:mb-32 flex flex-col items-center text-center">
-                {/* Everything but the globe recedes while a city is open */}
-                <h1 className={`text-3xl md:text-4xl font-medium tracking-[-0.03em] leading-[1.05] text-ink mb-4 transition-opacity duration-500 ${engaged ? 'opacity-0' : ''}`}>
+
+            {/* The landing is the room: name, one statement, the globe.
+                The marker dots are the way in (DESIGN.md §32, §45). */}
+            <header id="overview" className="entrance flex flex-col items-center text-center">
+                <h1 className={`text-3xl md:text-4xl font-medium tracking-[-0.03em] leading-[1.05] text-ink mb-4 ${fade}`}>
                     {t.hero.name}
                 </h1>
-                <p className={`text-lg md:text-xl font-light tracking-[-0.01em] leading-snug text-ink mb-3 max-w-lg transition-opacity duration-500 ${engaged ? 'opacity-0' : ''}`}>
+                <p className={`text-lg md:text-xl font-light tracking-[-0.01em] leading-snug text-ink mb-3 max-w-lg ${fade}`}>
                     {t.hero.statement}
                 </p>
-                <p className={`text-sm text-ink-2 leading-relaxed mb-2 max-w-lg transition-opacity duration-500 ${engaged ? 'opacity-0' : ''}`}>
+                <p className={`text-sm text-ink-2 leading-relaxed mb-2 max-w-lg ${fade}`}>
                     {t.hero.description}
                 </p>
                 <div className="w-full flex justify-center">
-                    <WorkGlobe ref={globeRef} size={520} />
+                    <WorkGlobe
+                        ref={globeRef}
+                        size={520}
+                        onCityClick={goCity}
+                        engaged={engaged}
+                        cityLabels={{ tokyo: t.locations.tokyo.name, singapore: t.locations.singapore.name }}
+                    />
                 </div>
-                <p className={`text-xs text-ink-3 mt-5 mb-4 transition-opacity duration-500 ${engaged ? 'opacity-0' : ''}`}>
-                    {t.locations.explore}
-                </p>
-                <div className={`flex flex-wrap justify-center gap-3 transition-opacity duration-500 ${engaged ? 'opacity-0 pointer-events-none' : ''}`}>
-                    {['tokyo', 'singapore'].map((city) => (
-                        <button
-                            key={city}
-                            onClick={() => goCity(city)}
-                            className="px-5 py-2.5 text-sm rounded-xl bg-surface border border-hairline text-ink-2 hover:text-ink active:scale-[0.98] transition-all"
-                            style={{ boxShadow: 'var(--shadow-low)' }}
-                        >
-                            {t.locations[city].button}
-                        </button>
-                    ))}
+                <p className={`text-xs text-ink-3 mt-4 ${fade}`}>{t.locations.explore}</p>
+                <div className={`flex items-center gap-6 mt-7 ${fade}`}>
+                    {contactLinks.map((link) => {
+                        const Icon = link.icon;
+                        return (
+                            <a
+                                key={link.href}
+                                href={link.href}
+                                {...(link.external ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
+                                aria-label={link.label}
+                                className="text-ink-3 hover:text-ink transition-colors"
+                            >
+                                <Icon size={17} />
+                            </a>
+                        );
+                    })}
+                    <Link to="/cv" aria-label={t.contact.cv_link} className="text-ink-3 hover:text-ink transition-colors">
+                        <FileText size={17} />
+                    </Link>
                 </div>
-            </header>
-
-            {/* Selected work */}
-            <section id="work" className="mb-28 md:mb-36 scroll-mt-24">
-                <FadeIn>
-                    <SectionHeading>{t.sections.research}</SectionHeading>
-                </FadeIn>
-                <div>
-                    {selected.map((project, i) => (
-                        <FadeIn key={project.slug} delay={Math.min(i * 60, 180)}>
-                            <ProjectRow project={project} viewLabel={t.project.view} />
-                        </FadeIn>
-                    ))}
-                </div>
-
-                {other.length > 0 && (
-                    <FadeIn>
-                        <div className="mt-4 pt-6 border-t border-hairline">
-                            <p className="text-xs text-ink-3 mb-3">{t.project.also}</p>
-                            {other.map((project) => (
-                                <Link
-                                    key={project.slug}
-                                    to={`/projects/${project.slug}`}
-                                    className="group inline-flex items-baseline gap-3 text-sm text-ink-2 hover:text-accent transition-colors"
-                                >
-                                    <span className="font-medium">{project.title}</span>
-                                    <span className="text-xs text-ink-3">{project.year} · {project.category}</span>
-                                </Link>
-                            ))}
-                        </div>
-                    </FadeIn>
-                )}
-            </section>
-
-            {/* Current research */}
-            <section id="thesis" className="mb-28 md:mb-36 scroll-mt-24">
-                <FadeIn>
-                    <SectionHeading>{t.sections.active_research}</SectionHeading>
-                </FadeIn>
-                <div className="space-y-6">
-                    <FadeIn>
-                        <ResearchPanel
-                            label={t.thesis.label}
-                            title={t.thesis.title}
-                            status={t.thesis.status}
-                            description={t.thesis.description}
-                            facts={[
-                                [t.focus_area, t.thesis.focus],
-                                [t.key_protocol, t.thesis.protocol],
-                                [t.application, t.thesis.application],
-                            ]}
-                        />
-                    </FadeIn>
-                    <FadeIn delay={80}>
-                        <ResearchPanel
-                            label={t.vcldac.label}
-                            title={t.vcldac.title}
-                            status={t.vcldac.status}
-                            description={t.vcldac.description}
-                            facts={[
-                                [t.focus_area, t.vcldac.focus],
-                                [t.architecture, t.vcldac.architecture],
-                                [t.verification, t.vcldac.verification],
-                            ]}
-                        />
-                    </FadeIn>
-                </div>
-            </section>
-
-            {/* Background */}
-            <section id="about" className="mb-28 md:mb-36 scroll-mt-24">
-                <FadeIn>
-                    <SectionHeading>{t.sections.philosophy}</SectionHeading>
-                </FadeIn>
-                <FadeIn>
-                    <div className="max-w-2xl space-y-5 text-ink-2 leading-relaxed">
-                        <p>{t.philosophy.p1}</p>
-                        <p>{t.philosophy.p2}</p>
-                        <p className="pt-2 text-sm">
-                            <span className="block text-xs text-ink-3 mb-1.5">{t.philosophy.stack_label}</span>
-                            Rust, C++, Python, Swift, LEAN 4, LaTeX, MATLAB, Julia, React
-                        </p>
-                    </div>
-                </FadeIn>
-            </section>
-
-            {/* Contact */}
-            <footer id="contact" className="pb-16 scroll-mt-24">
-                <FadeIn>
-                    <SectionHeading>{t.contact.title}</SectionHeading>
-                    <p className="text-ink-2 leading-relaxed mb-10 max-w-xl">
-                        {t.contact.subtitle}
-                    </p>
-                </FadeIn>
-
-                <FadeIn delay={80}>
-                    <ContactForm />
-                </FadeIn>
-
-                <FadeIn delay={140}>
-                    <div className="flex flex-col md:flex-row flex-wrap gap-5 md:gap-10 mt-14 pt-8 border-t border-hairline">
-                        {contactLinks.map((link) => {
-                            const Icon = link.icon;
-                            return (
-                                <a
-                                    key={link.href}
-                                    href={link.href}
-                                    {...(link.external ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
-                                    className="flex items-center gap-2.5 text-sm text-ink-2 hover:text-accent transition-colors"
-                                >
-                                    <Icon size={15} />
-                                    <span>{link.label}</span>
-                                </a>
-                            );
-                        })}
-                        <Link to="/cv" className="flex items-center gap-2.5 text-sm text-ink-2 hover:text-accent transition-colors">
-                            <FileText size={15} />
-                            <span>{t.contact.cv_link}</span>
-                        </Link>
-                    </div>
-                </FadeIn>
-
-                <p className="mt-16 text-xs text-ink-3">
+                <p className={`text-xs text-ink-3 mt-6 ${fade}`}>
                     © 2026 {t.footer.copyright} · <TokyoTime />
                 </p>
-            </footer>
+            </header>
         </div>
     );
 }

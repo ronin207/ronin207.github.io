@@ -31,6 +31,7 @@
     --shadow-low: 0 2px 4px rgba(15, 17, 21, 0.06);
     --shadow-medium: 0 4px 24px rgba(15, 17, 21, 0.10);
     --sheen: rgba(255, 255, 255, 0.55);
+    --roomlight: rgba(158, 184, 232, 0.09);
 }
 
 .dark {
@@ -50,6 +51,7 @@
     --shadow-low: 0 2px 4px rgba(0, 0, 0, 0.25);
     --shadow-medium: 0 4px 24px rgba(0, 0, 0, 0.35);
     --sheen: rgba(255, 255, 255, 0.09);
+    --roomlight: rgba(244, 198, 142, 0.05);
 }
 
 @theme inline {
@@ -142,6 +144,31 @@
     box-shadow: var(--shadow-low);
 }
 
+/* First-visit entrance choreography (recipe measured from benji.org:
+   8px rise, 0.5s ease, staggered; skipped on revisit within a session) */
+@keyframes rise {
+    from {
+        opacity: 0;
+        transform: translateY(8px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.entrance > * {
+    animation: rise 0.5s ease both;
+}
+
+.entrance > *:nth-child(2) { animation-delay: 80ms; }
+.entrance > *:nth-child(3) { animation-delay: 160ms; }
+.entrance > *:nth-child(4) { animation-delay: 240ms; }
+
+.revisit .entrance > * {
+    animation: none;
+}
+
 /* Gentle specular highlight that follows the pointer (DESIGN.md §25) */
 .sheen {
     position: relative;
@@ -165,14 +192,30 @@
 /* The city through the glass wall, as light only (DESIGN.md §38).
    By day: cool haze low on the horizon. At night: a warm city glow and
    a few out-of-focus lights — bokeh, not buildings. */
+/* The lamp in the room — a soft light that trails the pointer.
+   Warm at night, cool daylight otherwise. Driven from CityGlow.jsx. */
+.roomlight {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 840px;
+    height: 840px;
+    z-index: -1;
+    pointer-events: none;
+    border-radius: 50%;
+    background: radial-gradient(closest-side, var(--roomlight), transparent 72%);
+    will-change: transform;
+}
+
 .cityglow {
     position: fixed;
     left: 0;
     right: 0;
-    bottom: 0;
+    bottom: -90px;
     z-index: -1;
-    height: 42vh;
+    height: calc(42vh + 90px);
     pointer-events: none;
+    will-change: transform;
     background:
         radial-gradient(70% 55% at 50% 108%, rgba(150, 180, 226, 0.14), transparent 70%),
         radial-gradient(4rem 4rem at 16% 88%, rgba(255, 255, 255, 0.5), transparent 70%),

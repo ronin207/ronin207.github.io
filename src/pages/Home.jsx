@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { ArrowUpRight, Mail, Github, FileText, Linkedin } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import useInView from '../hooks/useInView.jsx';
@@ -73,6 +73,33 @@ const ResearchPanel = ({ label, title, status, description, facts }) => (
         </dl>
     </div>
 );
+
+// The room is in Tokyo; the clock in it is real (benji.org pattern —
+// a live, factual detail rather than decorative motion).
+const TokyoTime = () => {
+    const { lang } = useLang();
+    const [now, setNow] = useState(() => new Date());
+
+    useEffect(() => {
+        const tick = () => setNow(new Date());
+        const msToNextMinute = 60000 - (Date.now() % 60000);
+        let interval;
+        const timeout = setTimeout(() => {
+            tick();
+            interval = setInterval(tick, 60000);
+        }, msToNextMinute);
+        return () => { clearTimeout(timeout); clearInterval(interval); };
+    }, []);
+
+    const time = new Intl.DateTimeFormat(lang === 'ja' ? 'ja-JP' : 'en-US', {
+        hour: 'numeric',
+        minute: '2-digit',
+        hour12: false,
+        timeZone: 'Asia/Tokyo',
+    }).format(now);
+
+    return <span>{lang === 'ja' ? `東京 ${time}` : `${time} in Tokyo`}</span>;
+};
 
 const Field = ({ label, children }) => (
     <label className="block">
@@ -170,40 +197,33 @@ export default function Home() {
 
     return (
         <div className="mx-auto max-w-3xl px-6 pt-40 md:pt-52">
-            {/* Hero — restrained landing (DESIGN.md §32, §35) */}
-            <header id="overview" className="mb-28 md:mb-36">
-                <FadeIn>
-                    <h1 className="text-5xl md:text-[64px] font-medium tracking-[-0.04em] leading-[1.05] text-ink mb-7">
-                        {t.hero.name}
-                    </h1>
-                </FadeIn>
-                <FadeIn delay={80}>
-                    <p className="text-2xl md:text-[28px] font-light tracking-[-0.015em] leading-snug text-ink mb-6 max-w-xl">
-                        {t.hero.statement}
-                    </p>
-                </FadeIn>
-                <FadeIn delay={160}>
-                    <p className="text-ink-2 leading-relaxed mb-10 max-w-xl">
-                        {t.hero.description}
-                    </p>
-                </FadeIn>
-                <FadeIn delay={240}>
-                    <div className="flex items-center gap-4">
-                        <a
-                            href="#work"
-                            className="px-5 py-2.5 text-sm font-medium rounded-xl bg-ink text-canvas hover:opacity-85 active:scale-[0.98] transition-all"
-                        >
-                            {t.hero.cta_primary}
-                        </a>
-                        <a
-                            href="#contact"
-                            className="px-5 py-2.5 text-sm rounded-xl bg-surface border border-hairline text-ink-2 hover:text-ink active:scale-[0.98] transition-all"
-                            style={{ boxShadow: 'var(--shadow-low)' }}
-                        >
-                            {t.hero.cta_secondary}
-                        </a>
-                    </div>
-                </FadeIn>
+            {/* Hero — restrained landing (DESIGN.md §32, §35); entrance
+                choreography plays on first visit only */}
+            <header id="overview" className="entrance mb-28 md:mb-36">
+                <h1 className="text-5xl md:text-[64px] font-medium tracking-[-0.04em] leading-[1.05] text-ink mb-7">
+                    {t.hero.name}
+                </h1>
+                <p className="text-2xl md:text-[28px] font-light tracking-[-0.015em] leading-snug text-ink mb-6 max-w-xl">
+                    {t.hero.statement}
+                </p>
+                <p className="text-ink-2 leading-relaxed mb-10 max-w-xl">
+                    {t.hero.description}
+                </p>
+                <div className="flex items-center gap-4">
+                    <a
+                        href="#work"
+                        className="px-5 py-2.5 text-sm font-medium rounded-xl bg-ink text-canvas hover:opacity-85 active:scale-[0.98] transition-all"
+                    >
+                        {t.hero.cta_primary}
+                    </a>
+                    <a
+                        href="#contact"
+                        className="px-5 py-2.5 text-sm rounded-xl bg-surface border border-hairline text-ink-2 hover:text-ink active:scale-[0.98] transition-all"
+                        style={{ boxShadow: 'var(--shadow-low)' }}
+                    >
+                        {t.hero.cta_secondary}
+                    </a>
+                </div>
             </header>
 
             {/* Selected work */}
@@ -327,7 +347,7 @@ export default function Home() {
                 </FadeIn>
 
                 <p className="mt-16 text-xs text-ink-3">
-                    © 2026 {t.footer.copyright}
+                    © 2026 {t.footer.copyright} · <TokyoTime />
                 </p>
             </footer>
         </div>

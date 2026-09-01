@@ -123,7 +123,7 @@ export default function Home() {
     ];
 
     return (
-        <div className="mx-auto max-w-3xl px-6 pt-32 md:pt-36 pb-10 min-h-screen">
+        <div className="mx-auto max-w-3xl px-6 pt-20 md:pt-24">
             {/* City sheet — scrolls up over the zoomed globe. The spacer
                 at the top keeps the city in view; clicking it closes. */}
             {cityView && createPortal(
@@ -166,50 +166,59 @@ export default function Home() {
                 document.body
             )}
 
-            {/* The landing is the room: name, one statement, the globe.
+            {/* The landing is the room: a nameplate top-left, the globe
+                as the centerpiece, a quiet ledger line at the bottom.
                 The marker dots are the way in (DESIGN.md §32, §45). */}
-            <header id="overview" className="entrance flex flex-col items-center text-center">
-                <h1 className={`text-3xl md:text-4xl font-medium tracking-[-0.03em] leading-[1.05] text-ink mb-4 ${fade}`}>
-                    {t.hero.name}
-                </h1>
-                <p className={`text-lg md:text-xl font-light tracking-[-0.01em] leading-snug text-ink mb-3 max-w-lg ${fade}`}>
-                    {t.hero.statement}
-                </p>
-                <p className={`text-sm text-ink-2 leading-relaxed mb-2 max-w-lg ${fade}`}>
-                    {t.hero.description}
-                </p>
-                <div className="w-full flex justify-center">
-                    <WorkGlobe
-                        ref={globeRef}
-                        size={520}
+            <header id="overview" className="entrance flex flex-col min-h-[calc(100svh-8.5rem)] md:min-h-[calc(100svh-9.5rem)]">
+                <div className={`text-left ${fade}`}>
+                    <h1 className="text-2xl md:text-[28px] font-medium tracking-[-0.02em] leading-tight text-ink">
+                        {t.hero.name}
+                    </h1>
+                    <p className="text-sm md:text-base font-light text-ink-2 mt-1 max-w-md">
+                        {t.hero.statement}
+                    </p>
+                    <p className="text-xs text-ink-3 leading-relaxed mt-2 max-w-md">
+                        {t.hero.description}
+                    </p>
+                </div>
+                <div className="flex-1 w-full flex items-center justify-center py-4">
+                    {/* Width capped against viewport height so the globe
+                        never pushes the ledger line below the fold */}
+                    <div className="w-full" style={{ maxWidth: 'min(680px, calc(100svh - 380px))' }}>
+                        <WorkGlobe
+                            ref={globeRef}
+                            size={680}
                         onCityClick={goCity}
                         engaged={engaged}
-                        cityLabels={{ tokyo: t.locations.tokyo.name, singapore: t.locations.singapore.name }}
-                    />
+                            cityLabels={{ tokyo: t.locations.tokyo.name, singapore: t.locations.singapore.name }}
+                        />
+                    </div>
                 </div>
-                <p className={`text-xs text-ink-3 mt-4 ${fade}`}>{t.locations.explore}</p>
-                <div className={`flex items-center gap-6 mt-7 ${fade}`}>
-                    {contactLinks.map((link) => {
-                        const Icon = link.icon;
-                        return (
-                            <a
-                                key={link.href}
-                                href={link.href}
-                                {...(link.external ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
-                                aria-label={link.label}
-                                className="text-ink-3 hover:text-ink transition-colors"
-                            >
-                                <Icon size={17} />
-                            </a>
-                        );
-                    })}
-                    <Link to="/cv" aria-label={t.contact.cv_link} className="text-ink-3 hover:text-ink transition-colors">
-                        <FileText size={17} />
-                    </Link>
+                <div className={`w-full flex flex-wrap items-center justify-between gap-x-6 gap-y-3 pb-5 ${fade}`}>
+                    <div className="flex items-center gap-5">
+                        {contactLinks.map((link) => {
+                            const Icon = link.icon;
+                            return (
+                                <a
+                                    key={link.href}
+                                    href={link.href}
+                                    {...(link.external ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
+                                    aria-label={link.label}
+                                    className="text-ink-3 hover:text-ink transition-colors"
+                                >
+                                    <Icon size={17} />
+                                </a>
+                            );
+                        })}
+                        <Link to="/cv" aria-label={t.contact.cv_link} className="text-ink-3 hover:text-ink transition-colors">
+                            <FileText size={17} />
+                        </Link>
+                    </div>
+                    <p className="text-xs text-ink-3 hidden sm:block">{t.locations.explore}</p>
+                    <p className="text-xs text-ink-3">
+                        © 2026 {t.footer.copyright} · <TokyoTime />
+                    </p>
                 </div>
-                <p className={`text-xs text-ink-3 mt-6 ${fade}`}>
-                    © 2026 {t.footer.copyright} · <TokyoTime />
-                </p>
             </header>
         </div>
     );

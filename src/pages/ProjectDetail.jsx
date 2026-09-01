@@ -1,11 +1,17 @@
 import React from 'react';
 import { useParams, Link, Navigate } from 'react-router-dom';
-import { ArrowLeft, ArrowUpRight, Github } from 'lucide-react';
+import { ArrowLeft, ArrowUpRight, Github, ChevronRight } from 'lucide-react';
 import projects from '../data/projects';
 import usePageTitle from '../hooks/usePageTitle.jsx';
+import { useLang } from '../i18n/LanguageContext.jsx';
 
-export default function ProjectDetail({ resolvedTheme }) {
+const SectionHeading = ({ children }) => (
+  <h2 className="text-sm font-medium text-ink-3 mb-4">{children}</h2>
+);
+
+export default function ProjectDetail() {
   const { slug } = useParams();
+  const { t } = useLang();
   const project = projects.find((p) => p.slug === slug);
 
   usePageTitle(project?.title);
@@ -14,140 +20,104 @@ export default function ProjectDetail({ resolvedTheme }) {
     return <Navigate to="/" replace />;
   }
 
-  const Icon = project.icon;
+  const hasLinks = project.links?.github || project.links?.paper;
 
   return (
-    <div className="min-h-screen pt-32 pb-20 px-6 container mx-auto max-w-4xl">
-      {/* Back nav */}
+    <div className="min-h-screen pt-36 md:pt-44 pb-20 px-6 mx-auto max-w-3xl">
       <Link
         to="/"
-        className="inline-flex items-center gap-2 text-sm font-mono text-neutral-500 hover:text-indigo-600 dark:hover:text-emerald-500 transition-colors mb-12"
+        className="inline-flex items-center gap-2 text-sm text-ink-3 hover:text-ink transition-colors mb-14"
       >
-        <ArrowLeft size={16} />
-        <span>RETURN_HOME</span>
+        <ArrowLeft size={15} />
+        <span>{t.return_home}</span>
       </Link>
 
-      {/* Header */}
-      <header className="mb-16 border-b border-neutral-200 dark:border-neutral-800 pb-12">
-        <div className="flex items-center gap-3 mb-4">
-          <Icon size={20} className={resolvedTheme === 'dark' ? 'text-emerald-500' : 'text-indigo-600'} />
-          <span className="text-xs font-mono text-neutral-500 uppercase tracking-widest">
-            {project.category}
-          </span>
-          <span className="text-xs font-mono text-neutral-400">
-            [{project.year}]
-          </span>
-        </div>
-        <h1 className="text-4xl md:text-6xl font-light tracking-tight mb-6 text-neutral-900 dark:text-white">
+      {/* Lead with the question and result (DESIGN.md §33) */}
+      <header className="mb-16">
+        <p className="text-xs text-ink-3 mb-3">
+          {project.category} · {project.year} · {project.status}
+        </p>
+        <h1 className="text-3xl md:text-5xl font-medium tracking-tight text-ink mb-6">
           {project.title}
         </h1>
-        <p className="text-lg text-neutral-600 dark:text-neutral-400 font-light max-w-2xl leading-relaxed">
+        <p className="text-lg md:text-xl font-light text-ink leading-relaxed max-w-2xl">
           {project.description}
         </p>
-
-        {/* Links */}
-        <div className="flex gap-4 mt-8">
-          {project.links?.github && (
-            <a
-              href={project.links.github}
-              target="_blank"
-              rel="noopener noreferrer"
-              className={`inline-flex items-center gap-2 px-4 py-2 text-sm font-mono rounded-full border transition-colors ${
-                resolvedTheme === 'dark'
-                  ? 'border-neutral-700 text-neutral-300 hover:border-emerald-500 hover:text-emerald-500'
-                  : 'border-neutral-300 text-neutral-600 hover:border-indigo-600 hover:text-indigo-600'
-              }`}
-            >
-              <Github size={16} />
-              Source Code
-            </a>
-          )}
-          {project.links?.paper && (
-            <a
-              href={project.links.paper}
-              target="_blank"
-              rel="noopener noreferrer"
-              className={`inline-flex items-center gap-2 px-4 py-2 text-sm font-mono rounded-full border transition-colors ${
-                resolvedTheme === 'dark'
-                  ? 'border-neutral-700 text-neutral-300 hover:border-emerald-500 hover:text-emerald-500'
-                  : 'border-neutral-300 text-neutral-600 hover:border-indigo-600 hover:text-indigo-600'
-              }`}
-            >
-              <ArrowUpRight size={16} />
-              Research Paper
-            </a>
-          )}
-        </div>
       </header>
 
-      {/* Tech Stack */}
-      <section className="mb-16">
-        <h2 className="text-xs font-mono text-neutral-400 dark:text-neutral-500 tracking-widest uppercase mb-6">
-          Tech Stack
-        </h2>
-        <div className="flex flex-wrap gap-2">
-          {project.techStack.map((tech) => (
-            <span
-              key={tech}
-              className={`px-4 py-1.5 text-sm font-mono rounded-full border ${
-                resolvedTheme === 'dark'
-                  ? 'bg-neutral-900/50 border-neutral-800 text-neutral-300'
-                  : 'bg-neutral-50 border-neutral-200 text-neutral-600'
-              }`}
-            >
-              {tech}
-            </span>
-          ))}
-        </div>
+      <section className="mb-14">
+        <SectionHeading>{t.problem}</SectionHeading>
+        <p className="text-ink-2 leading-relaxed max-w-2xl">{project.problem}</p>
       </section>
 
-      {/* Problem */}
-      <section className="mb-16">
-        <h2 className="text-xs font-mono text-neutral-400 dark:text-neutral-500 tracking-widest uppercase mb-6">
-          Problem
-        </h2>
-        <p className="text-neutral-600 dark:text-neutral-400 font-light leading-relaxed text-lg">
-          {project.problem}
-        </p>
+      <section className="mb-14">
+        <SectionHeading>{t.approach}</SectionHeading>
+        <p className="text-ink-2 leading-relaxed max-w-2xl">{project.approach}</p>
       </section>
 
-      {/* Approach */}
-      <section className="mb-16">
-        <h2 className="text-xs font-mono text-neutral-400 dark:text-neutral-500 tracking-widest uppercase mb-6">
-          Technical Approach
-        </h2>
-        <p className="text-neutral-600 dark:text-neutral-400 font-light leading-relaxed text-lg">
-          {project.approach}
-        </p>
-      </section>
-
-      {/* Outcomes */}
-      <section className="mb-16">
-        <h2 className="text-xs font-mono text-neutral-400 dark:text-neutral-500 tracking-widest uppercase mb-6">
-          Key Outcomes
-        </h2>
-        <ul className="space-y-4">
+      <section className="mb-14">
+        <SectionHeading>{t.outcomes}</SectionHeading>
+        <ul className="space-y-3 max-w-2xl">
           {project.outcomes.map((outcome, i) => (
-            <li key={i} className="flex items-start gap-4">
-              <span className={`mt-1.5 w-2 h-2 rounded-full shrink-0 ${
-                resolvedTheme === 'dark' ? 'bg-emerald-500' : 'bg-indigo-600'
-              }`} />
-              <span className="text-neutral-600 dark:text-neutral-400 font-light leading-relaxed">
-                {outcome}
-              </span>
+            <li key={i} className="flex items-start gap-3">
+              <span className="mt-2.5 w-1 h-1 rounded-full bg-ink-3 shrink-0" />
+              <span className="text-ink-2 leading-relaxed">{outcome}</span>
             </li>
           ))}
         </ul>
       </section>
 
-      {/* Footer nav */}
-      <footer className="mt-20 pt-8 border-t border-neutral-200 dark:border-neutral-800">
+      {/* Technical depth stays behind disclosure (DESIGN.md §17, §46) */}
+      <details className="group mb-14 max-w-2xl">
+        <summary className="flex items-center gap-1.5 text-sm font-medium text-ink-3 hover:text-ink cursor-pointer list-none transition-colors">
+          <ChevronRight size={14} className="transition-transform group-open:rotate-90" />
+          {t.technical_details}
+        </summary>
+        <div className="mt-4 pl-5">
+          <p className="text-xs text-ink-3 mb-2">{t.tech_stack}</p>
+          <p className="text-sm text-ink-2 leading-relaxed">
+            {project.techStack.join(' · ')}
+          </p>
+        </div>
+      </details>
+
+      {hasLinks && (
+        <section className="mb-14">
+          <SectionHeading>{t.artifacts}</SectionHeading>
+          <div className="flex flex-wrap gap-3">
+            {project.links?.github && (
+              <a
+                href={project.links.github}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 px-4 py-2 text-sm rounded-xl border border-hairline text-ink-2 hover:text-ink hover:border-ink-3 transition-colors"
+              >
+                <Github size={15} />
+                {t.source_code}
+              </a>
+            )}
+            {project.links?.paper && (
+              <a
+                href={project.links.paper}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 px-4 py-2 text-sm rounded-xl border border-hairline text-ink-2 hover:text-ink hover:border-ink-3 transition-colors"
+              >
+                <ArrowUpRight size={15} />
+                {t.research_paper}
+              </a>
+            )}
+          </div>
+        </section>
+      )}
+
+      <footer className="mt-20 pt-8 border-t border-hairline">
         <Link
           to="/"
-          className="inline-flex items-center gap-2 text-sm font-mono text-neutral-500 hover:text-indigo-600 dark:hover:text-emerald-500 transition-colors"
+          className="inline-flex items-center gap-2 text-sm text-ink-3 hover:text-ink transition-colors"
         >
-          <ArrowLeft size={16} />
-          <span>Back to all projects</span>
+          <ArrowLeft size={15} />
+          <span>{t.back_to_projects}</span>
         </Link>
       </footer>
     </div>

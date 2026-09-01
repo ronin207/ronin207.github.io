@@ -1,11 +1,12 @@
 import React from 'react';
-import { ArrowLeft, Download, Globe, Award, BookOpen } from 'lucide-react';
+import { ArrowLeft, Download } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import usePageTitle from '../hooks/usePageTitle.jsx';
+import { useLang } from '../i18n/LanguageContext.jsx';
 
 const CvSection = ({ title, children }) => (
-    <section className="mb-12">
-        <h2 className="text-lg font-mono uppercase tracking-widest mb-6 border-b border-neutral-200 dark:border-neutral-800 pb-2 text-neutral-400 dark:text-neutral-500">
+    <section className="mb-14">
+        <h2 className="text-sm font-medium text-ink-3 mb-6 pb-2 border-b border-hairline">
             {title}
         </h2>
         <div className="space-y-8">
@@ -15,65 +16,62 @@ const CvSection = ({ title, children }) => (
 );
 
 const CvItem = ({ title, subtitle, date, location, children }) => (
-    <div className="group">
-        <div className="flex flex-col md:flex-row md:justify-between md:items-baseline mb-2">
-            <h3 className="text-xl font-medium text-neutral-800 dark:text-neutral-200 group-hover:text-indigo-600 dark:group-hover:text-emerald-500 transition-colors">
-                {title}
-            </h3>
-            <span className="font-mono text-xs text-neutral-500 whitespace-nowrap">{date}</span>
+    <div>
+        <div className="flex flex-col md:flex-row md:justify-between md:items-baseline mb-1">
+            <h3 className="text-lg font-medium text-ink">{title}</h3>
+            <span className="text-xs text-ink-3 whitespace-nowrap">{date}</span>
         </div>
         <div className="flex flex-col md:flex-row md:justify-between md:items-baseline mb-3">
-            <span className="text-sm font-medium text-neutral-600 dark:text-neutral-400">{subtitle}</span>
-            <span className="text-xs text-neutral-400 dark:text-neutral-600">{location}</span>
+            <span className="text-sm text-ink-2">{subtitle}</span>
+            <span className="text-xs text-ink-3">{location}</span>
         </div>
         {children && (
-            <div className="text-sm text-neutral-600 dark:text-neutral-400 leading-relaxed space-y-1 pl-4 border-l-2 border-neutral-100 dark:border-neutral-800 group-hover:border-indigo-200 dark:group-hover:border-emerald-900/50 transition-colors">
+            <div className="text-sm text-ink-2 leading-relaxed space-y-1">
                 {children}
             </div>
         )}
     </div>
 );
 
-export default function Cv({ resolvedTheme }) {
+export default function Cv() {
     usePageTitle('CV');
+    const { t } = useLang();
     return (
-        <div className="min-h-screen pt-32 pb-20 px-6 container mx-auto max-w-4xl">
-            <div className="mb-12">
-                <Link to="/" className="inline-flex items-center gap-2 text-sm font-mono text-neutral-500 hover:text-indigo-600 dark:hover:text-emerald-500 transition-colors mb-8">
-                    <ArrowLeft size={16} />
-                    <span>RETURN_HOME</span>
+        <div className="min-h-screen pt-36 md:pt-44 pb-20 px-6 mx-auto max-w-3xl">
+            <div className="mb-14">
+                <Link to="/" className="inline-flex items-center gap-2 text-sm text-ink-3 hover:text-ink transition-colors mb-10">
+                    <ArrowLeft size={15} />
+                    <span>{t.return_home}</span>
                 </Link>
 
-                <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6 border-b border-neutral-200 dark:border-neutral-800 pb-8">
+                <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6 border-b border-hairline pb-8">
                     <div>
-                        <h1 className="text-4xl md:text-6xl font-light tracking-tight mb-4 text-neutral-900 dark:text-white">
+                        <h1 className="text-3xl md:text-4xl font-medium tracking-tight mb-3 text-ink">
                             Takumi Otsuka
                         </h1>
-                        <p className="text-lg text-neutral-600 dark:text-neutral-400 font-light mb-4 max-w-2xl">
-                            AI Security Research Intern @ AIFT | Provable Security @ Waseda University
+                        <p className="text-ink-2 mb-4 max-w-2xl">
+                            AI security research intern at AIFT. Provable security at Waseda University.
                         </p>
-                        <div className="flex flex-wrap gap-4 text-sm font-mono text-neutral-500">
-                            <a href="mailto:takumi.ot0911@gmail.com" className="hover:text-indigo-600 dark:hover:text-emerald-500 transition-colors">takumi.ot0911@gmail.com</a>
-                            <span>|</span>
-                            <a href="https://github.com/ronin207" target="_blank" rel="noreferrer" className="hover:text-indigo-600 dark:hover:text-emerald-500 transition-colors">github.com/ronin207</a>
-                            <span>|</span>
-                            <a href="https://linkedin.com/in/takumi-otsuka" target="_blank" rel="noreferrer" className="hover:text-indigo-600 dark:hover:text-emerald-500 transition-colors">linkedin.com/in/takumi-otsuka</a>
+                        <div className="flex flex-wrap gap-x-5 gap-y-1 text-sm text-ink-3">
+                            <a href="mailto:takumi.ot0911@gmail.com" className="hover:text-accent transition-colors">takumi.ot0911@gmail.com</a>
+                            <a href="https://github.com/ronin207" target="_blank" rel="noreferrer" className="hover:text-accent transition-colors">github.com/ronin207</a>
+                            <a href="https://linkedin.com/in/takumi-otsuka" target="_blank" rel="noreferrer" className="hover:text-accent transition-colors">linkedin.com/in/takumi-otsuka</a>
                         </div>
                     </div>
 
                     <a
                         href="/Resume.pdf"
                         target="_blank"
-                        className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium transition-all ${resolvedTheme === 'dark' ? 'bg-white text-black hover:bg-neutral-200' : 'bg-neutral-900 text-white hover:bg-neutral-700'}`}
+                        className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium bg-ink text-canvas hover:opacity-85 transition-opacity"
                     >
-                        <Download size={16} />
+                        <Download size={15} />
                         <span>Download PDF</span>
                     </a>
                 </div>
             </div>
 
             <CvSection title="Summary">
-                <p className="text-neutral-600 dark:text-neutral-400 font-light leading-relaxed">
+                <p className="text-ink-2 leading-relaxed">
                     Research focus at Waseda University on zero-knowledge proofs, post-quantum cryptography, and formal verification — building cryptographic systems that remain secure in a quantum era. At AIFT, exploring the intersection of AI security and provable computation. Deeply engaged with mathematics and formal methods. Actively exploring opportunities in applied cryptography, security engineering, and cryptographic research.
                 </p>
             </CvSection>
@@ -82,7 +80,7 @@ export default function Cv({ resolvedTheme }) {
                 <CvItem
                     title="AIFT"
                     subtitle="AI Security Research Intern"
-                    date="Mar. 2026 -- Present"
+                    date="Mar. 2026 – Present"
                     location="Singapore (Remote)"
                 >
                     <ul className="list-disc list-outside ml-4 space-y-1">
@@ -94,7 +92,7 @@ export default function Cv({ resolvedTheme }) {
                 <CvItem
                     title="Functional AI Partners Pte Ltd"
                     subtitle="AI Consultant (Architect)"
-                    date="Sep. 2025 -- Dec. 2025"
+                    date="Sep. 2025 – Dec. 2025"
                     location="Tokyo, Japan"
                 >
                     <ul className="list-disc list-outside ml-4 space-y-1">
@@ -107,7 +105,7 @@ export default function Cv({ resolvedTheme }) {
                 <CvItem
                     title="Waseda University"
                     subtitle="LLM Engineer/Researcher"
-                    date="Feb. 2025 -- Aug. 2025"
+                    date="Feb. 2025 – Aug. 2025"
                     location="Tokyo, Japan"
                 >
                     <ul className="list-disc list-outside ml-4 space-y-1">
@@ -120,7 +118,7 @@ export default function Cv({ resolvedTheme }) {
                 <CvItem
                     title="Waseda University"
                     subtitle="Teaching Assistant (Foundations of Numerical Analysis)"
-                    date="Apr. 2023 -- Aug. 2025"
+                    date="Apr. 2023 – Aug. 2025"
                     location="Tokyo, Japan"
                 >
                     <ul className="list-disc list-outside ml-4 space-y-1">
@@ -133,7 +131,7 @@ export default function Cv({ resolvedTheme }) {
                 <CvItem
                     title="Waseda University"
                     subtitle="Research Assistant"
-                    date="May 2023 -- Aug. 2024"
+                    date="May 2023 – Aug. 2024"
                     location="Tokyo, Japan"
                 >
                     <ul className="list-disc list-outside ml-4 space-y-1">
@@ -146,7 +144,7 @@ export default function Cv({ resolvedTheme }) {
                 <CvItem
                     title="GDG on Campus Waseda University"
                     subtitle="Lead / Project Team Lead"
-                    date="Oct. 2021 -- July 2024"
+                    date="Oct. 2021 – July 2024"
                     location="Tokyo, Japan"
                 >
                     <ul className="list-disc list-outside ml-4 space-y-1">
@@ -158,7 +156,7 @@ export default function Cv({ resolvedTheme }) {
                 <CvItem
                     title="BMW Group"
                     subtitle="IT Intern"
-                    date="Nov. 2022 -- Apr. 2023"
+                    date="Nov. 2022 – Apr. 2023"
                     location="Tokyo, Japan"
                 >
                     <ul className="list-disc list-outside ml-4 space-y-1">
@@ -170,7 +168,7 @@ export default function Cv({ resolvedTheme }) {
                 <CvItem
                     title="Republic of Singapore Air Force"
                     subtitle="Motor Transport Operator"
-                    date="Dec. 2018 -- Oct. 2020"
+                    date="Dec. 2018 – Oct. 2020"
                     location="Singapore"
                 >
                     <ul className="list-disc list-outside ml-4 space-y-1">
@@ -226,7 +224,7 @@ export default function Cv({ resolvedTheme }) {
                 <CvItem
                     title="Waseda University"
                     subtitle="Master of Engineering — Computer Science and Communications Engineering"
-                    date="Sep. 2024 -- Sep. 2026"
+                    date="Sep. 2024 – Sep. 2026"
                     location="Tokyo, Japan"
                 >
                     <ul className="list-disc list-outside ml-4 space-y-1">
@@ -238,7 +236,7 @@ export default function Cv({ resolvedTheme }) {
                 <CvItem
                     title="Waseda University"
                     subtitle="Bachelor of Engineering — Major in Mathematical Science"
-                    date="Sep. 2020 -- Sep. 2024"
+                    date="Sep. 2020 – Sep. 2024"
                     location="Tokyo, Japan"
                 >
                     <ul className="list-disc list-outside ml-4 space-y-1">
@@ -249,42 +247,34 @@ export default function Cv({ resolvedTheme }) {
                 <CvItem
                     title="Harrow International School Bangkok"
                     subtitle="High School Diploma"
-                    date="2013 -- 2018"
+                    date="2013 – 2018"
                     location="Bangkok, Thailand"
                 />
             </CvSection>
 
             <CvSection title="Skills & Languages">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div className="p-6 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-neutral-50/50 dark:bg-neutral-900/30">
-                        <h4 className="font-medium mb-4 text-neutral-900 dark:text-white flex items-center gap-2">
-                            <BookOpen size={16} /> Technical Skills
-                        </h4>
-                        <div className="flex flex-wrap gap-2">
-                            {['zkVMs', 'Verifiable Credentials', 'Anonymous Credentials', 'SNARK', 'Zero-Knowledge Proofs', 'Python', 'Rust', 'Swift', 'Flutter', 'MATLAB', 'Julia', 'React', 'LangChain', 'GCP'].map(skill => (
-                                <span key={skill} className="px-3 py-1 text-xs font-mono rounded-full bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 text-neutral-600 dark:text-neutral-300">
-                                    {skill}
-                                </span>
-                            ))}
-                        </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
+                    <div>
+                        <h4 className="text-sm font-medium mb-3 text-ink">Technical</h4>
+                        <p className="text-sm text-ink-2 leading-relaxed">
+                            zkVMs, Verifiable Credentials, Anonymous Credentials, SNARKs, Zero-Knowledge Proofs, Python, Rust, Swift, Flutter, MATLAB, Julia, React, LangChain, GCP
+                        </p>
                     </div>
-                    <div className="p-6 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-neutral-50/50 dark:bg-neutral-900/30">
-                        <h4 className="font-medium mb-4 text-neutral-900 dark:text-white flex items-center gap-2">
-                            <Globe size={16} /> Languages
-                        </h4>
-                        <ul className="space-y-2 text-sm text-neutral-600 dark:text-neutral-400">
-                            <li className="flex justify-between"><span>English</span> <span className="text-neutral-400">Native/Bilingual</span></li>
-                            <li className="flex justify-between"><span>Japanese</span> <span className="text-neutral-400">Limited Working</span></li>
-                            <li className="flex justify-between"><span>Chinese</span> <span className="text-neutral-400">Limited Working</span></li>
-                            <li className="flex justify-between"><span>Thai</span> <span className="text-neutral-400">Elementary</span></li>
-                            <li className="flex justify-between"><span>German</span> <span className="text-neutral-400">Elementary</span></li>
+                    <div>
+                        <h4 className="text-sm font-medium mb-3 text-ink">Languages</h4>
+                        <ul className="space-y-1.5 text-sm text-ink-2">
+                            <li className="flex justify-between"><span>English</span> <span className="text-ink-3">Native/Bilingual</span></li>
+                            <li className="flex justify-between"><span>Japanese</span> <span className="text-ink-3">Limited Working</span></li>
+                            <li className="flex justify-between"><span>Chinese</span> <span className="text-ink-3">Limited Working</span></li>
+                            <li className="flex justify-between"><span>Thai</span> <span className="text-ink-3">Elementary</span></li>
+                            <li className="flex justify-between"><span>German</span> <span className="text-ink-3">Elementary</span></li>
                         </ul>
                     </div>
                 </div>
             </CvSection>
 
             <CvSection title="Awards & Certifications">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <ul className="space-y-2">
                     {[
                         "Sumitomo Electric Group CSR Foundation Scholarship",
                         "Decentralized Identity Foundation Hackathon 2024 (Ontology)",
@@ -293,16 +283,16 @@ export default function Cv({ resolvedTheme }) {
                         "Best Airman Award (207 SQN)",
                         "CS101: Introduction to Cyber Security",
                     ].map((award, i) => (
-                        <div key={i} className="flex items-start gap-3 p-3">
-                            <Award size={16} className="text-indigo-600 dark:text-emerald-500 mt-1 shrink-0" />
-                            <span className="text-sm text-neutral-700 dark:text-neutral-300">{award}</span>
-                        </div>
+                        <li key={i} className="flex items-start gap-3">
+                            <span className="mt-2.5 w-1 h-1 rounded-full bg-ink-3 shrink-0" />
+                            <span className="text-sm text-ink-2">{award}</span>
+                        </li>
                     ))}
-                </div>
+                </ul>
             </CvSection>
 
-            <footer className="mt-20 pt-8 border-t border-neutral-200 dark:border-neutral-800 text-center text-xs font-mono text-neutral-400">
-                &copy; 2025 TAKUMI.DEV // CV_MODULE_LOADED
+            <footer className="mt-20 pt-8 border-t border-hairline text-xs text-ink-3">
+                © 2026 Takumi Otsuka
             </footer>
         </div>
     );

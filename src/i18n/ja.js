@@ -8,35 +8,27 @@ const ja = {
 
   // Hero
   hero: {
-    badge: 'AIセキュリティ研究 @ AIFT · 修士 @ 早稲田大学',
-    title_1: '最適化する',
-    title_2: '量子の未来',
-    description: '早稲田大学とAIFTで**AIセキュリティ**、**ポスト量子暗号**、**ゼロ知識証明**を研究。量子時代にも安全な暗号システムの構築を目指す。',
-    cta_primary: 'プロトコルを見る',
-    cta_secondary: './連絡する',
+    name: '大塚 匠',
+    statement: 'アイデンティティ、暗号、検証可能な知能システムを研究しています。',
+    description: '早稲田大学大学院で研究を行い、AIFTでAIセキュリティのリサーチインターンを務めています。現在の研究テーマは、量子計算機に対して安全な匿名クレデンシャルと、AIシステムのセキュリティ評価手法です。',
+    cta_primary: '主な研究',
+    cta_secondary: '連絡先',
   },
 
   // Sections
   sections: {
-    research: '研究領域',
-    interests: '学際的関心',
+    research: '主な研究',
     active_research: '進行中の研究',
-    philosophy: '哲学',
-  },
-
-  // Intersection Interests
-  interests: {
-    p1: '私の研究は**暗号理論**、**AI**、**システム工学**の交差点に位置しています。理論的な困難性の仮定と実用的でユーザー中心のアプリケーションの橋渡しを目指しています。',
-    p2: 'これらの分野を組み合わせることで、現代のAIが暗号解析のツールとなると同時に、ゼロ知識証明やFHEなどのプライバシー保護技術の恩恵を受ける方法を探求しています。',
+    philosophy: '経歴',
   },
 
   // Thesis
   thesis: {
     label: '修士論文',
-    title: 'ポスト量子匿名認証',
+    title: 'ポスト量子匿名クレデンシャル',
     status: '進行中',
-    description: 'ポスト量子匿名認証システムにおけるzkVMとSNARK回路コンパイラの比較分析。BDECの静的なzkSNARK回路への依存は、動的な属性管理における致命的な柔軟性の欠如をもたらします。本研究では、zkVMと回路コンパイラの両アプローチでBDEC検証器をベンチマークし、証明時間、検証時間、メモリ使用量を測定して、次世代デジタルアイデンティティシステムのより実行可能な基盤を決定します。',
-    focus: 'zkVM vs SNARK コンパイラ',
+    description: 'ポスト量子匿名クレデンシャルシステムにおけるzkVMとSNARK回路コンパイラの比較分析。BDECは静的なzkSNARK回路に依存するため、動的な属性管理に制約があります。本研究では両アプローチでBDEC検証器をベンチマークし、証明時間・検証時間・メモリ使用量を測定します。',
+    focus: 'zkVM vs SNARKコンパイラ',
     protocol: 'Loquat / BDEC',
     application: '動的属性管理',
   },
@@ -46,63 +38,63 @@ const ja = {
     label: '副研究',
     title: 'OntoVC',
     status: '進行中',
-    description: 'Linked Dataの検証可能な資格情報を拡張し、プライバシーを保護するマルチ発行者オントロジー推論を実現。保有者はドメイン固有のオントロジーを使用して、中間前提を明かすことなく、複数の独立した資格情報から導出された事実を証明できます。SNARKと匿名認証システムを結合する二層検証アーキテクチャを特徴とし、LEAN 4による完全な形式検証を備えています。',
+    description: 'Linked Data検証可能クレデンシャルを拡張し、プライバシーを保護するマルチ発行者オントロジー推論を実現します。保有者は中間前提を明かすことなく、複数の独立したクレデンシャルから導出された事実を証明できます。SNARKと匿名クレデンシャルを結合する二層検証アーキテクチャを持ち、LEAN 4による完全な形式検証を備えています。',
     focus: 'ZKオントロジー推論',
     architecture: '二層 SNARK + AC',
     verification: 'LEAN 4 + Rust',
   },
 
-  // Philosophy
+  // Background
   philosophy: {
-    transition_label: '転換',
-    transition: '私の学術的な道は、ニューラルネットワークの数値最適化から暗号プロトコルの安全性を保証する数学的厳密性の形式化へと進化してきました。厳密な検証の強固なバックグラウンドを持ちながら、現在の厳密性は**暗号的困難性**と**数値最適化**に適用されています。',
-    belief: '量子コンピューティングが成熟するにつれて、セキュリティの美学は「見える南京錠」から「見えない数学」へと移行すると信じています。ポスト量子の世界でも安全であり続けるシステムの構築を目指しています。',
-    stack_label: '研究スタック',
+    p1: '私の研究は暗号理論、AI、システム工学の交差点に位置し、理論的な困難性の仮定と実用的でユーザー中心のアプリケーションの橋渡しを目指しています。',
+    p2: '学術的な歩みは、ニューラルネットワークの精度保証付き数値計算から、暗号プロトコルの形式的解析へと移ってきました。同じ厳密性を、現在は暗号学的困難性とAIシステムのセキュリティ評価に適用しています。',
+    stack_label: '使用言語・ツール',
   },
 
   // Contact
   contact: {
-    title: '通信開始',
-    subtitle: '学術的な共同研究、研究アシスタント職、興味深い対話に開かれています。',
+    title: '連絡先',
+    subtitle: '暗号、アイデンティティ、AIセキュリティに関する共同研究や対話を歓迎します。',
     form: {
       name: '名前',
       email: 'メール',
       message: 'メッセージ',
-      send: 'メッセージを送信',
-      sending: '送信中...',
-      sent: '送信完了！',
-      error: '問題が発生しました。直接メールでお試しください。',
+      send: '送信',
+      sending: '送信中…',
+      sent: '送信しました。',
+      error: '送信できませんでした。直接メールでご連絡ください。',
     },
-    cv_link: '履歴書を見る',
+    cv_link: '履歴書',
   },
 
   // Footer
   footer: {
-    copyright: 'TAKUMI.DEV',
-    system: 'システム',
-    terminal: 'ターミナル',
-    search: '検索',
+    copyright: '大塚 匠',
+    search_hint: '検索',
   },
 
   // Project cards
   project: {
-    view: 'プロジェクトを見る',
+    view: '研究を見る',
+    also: 'その他の制作',
   },
 
   // Common
-  focus_area: '研究領域',
-  key_protocol: '主要プロトコル',
+  focus_area: '焦点',
+  key_protocol: 'プロトコル',
   application: 'アプリケーション',
   architecture: 'アーキテクチャ',
   verification: '検証',
-  tech_stack: '技術スタック',
-  problem: '課題',
-  approach: '技術的アプローチ',
-  outcomes: '主要成果',
+  tech_stack: 'ツール・手法',
+  problem: 'この問題が重要な理由',
+  approach: 'アプローチ',
+  outcomes: '主要な結果',
+  technical_details: '技術的詳細',
+  artifacts: '成果物',
   return_home: 'ホームに戻る',
-  back_to_projects: 'プロジェクト一覧に戻る',
+  back_to_projects: '一覧に戻る',
   source_code: 'ソースコード',
-  research_paper: '研究論文',
+  research_paper: '論文',
 };
 
 export default ja;

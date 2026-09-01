@@ -1,43 +1,31 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowLeft, Terminal } from 'lucide-react';
+import { ArrowLeft } from 'lucide-react';
 import usePageTitle from '../hooks/usePageTitle.jsx';
+import { useLang } from '../i18n/LanguageContext.jsx';
 
-export default function NotFound({ resolvedTheme }) {
+export default function NotFound() {
   usePageTitle('404');
+  const { t } = useLang();
+
   return (
     <div className="min-h-screen flex items-center justify-center px-6">
       <div className="text-center max-w-md">
-        <div className="inline-flex items-center justify-center w-16 h-16 rounded-full border border-neutral-200 dark:border-neutral-800 mb-8">
-          <Terminal size={24} className={resolvedTheme === 'dark' ? 'text-emerald-500' : 'text-indigo-600'} />
-        </div>
-
-        <h1 className="text-6xl md:text-8xl font-light tracking-tight mb-4 text-neutral-900 dark:text-white">
+        <h1 className="text-5xl md:text-6xl font-medium tracking-tight mb-4 text-ink">
           404
         </h1>
 
-        <p className="font-mono text-sm text-neutral-500 mb-2 uppercase tracking-widest">
-          Segmentation Fault
-        </p>
-        <p className="text-neutral-600 dark:text-neutral-400 font-light mb-12">
-          The requested address does not exist in this memory space.
+        <p className="text-ink-2 leading-relaxed mb-10">
+          This page does not exist.
         </p>
 
         <Link
           to="/"
-          className={`inline-flex items-center gap-2 px-6 py-3 text-sm font-medium transition-colors ${
-            resolvedTheme === 'dark'
-              ? 'bg-white text-black hover:bg-neutral-200'
-              : 'bg-neutral-900 text-white hover:bg-neutral-700'
-          }`}
+          className="inline-flex items-center gap-2 px-5 py-2.5 text-sm font-medium rounded-xl bg-ink text-canvas hover:opacity-85 transition-opacity"
         >
-          <ArrowLeft size={16} />
-          <span>Return to Origin</span>
+          <ArrowLeft size={15} />
+          <span>{t.return_home}</span>
         </Link>
-
-        <div className="mt-16 font-mono text-[10px] text-neutral-400 dark:text-neutral-700 uppercase tracking-widest">
-          Process terminated with exit code 1
-        </div>
       </div>
     </div>
   );

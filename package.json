@@ -12,6 +12,7 @@
   "dependencies": {
     "@tailwindcss/postcss": "^4.1.17",
     "autoprefixer": "^10.4.22",
+    "cobe": "^2.0.1",
     "liquid-glass-react": "^1.1.1",
     "lucide-react": "^0.554.0",
     "postcss": "^8.5.6",

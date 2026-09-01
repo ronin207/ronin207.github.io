@@ -5,6 +5,7 @@ import useInView from '../hooks/useInView.jsx';
 import projects from '../data/projects';
 import usePageTitle from '../hooks/usePageTitle.jsx';
 import { useLang } from '../i18n/LanguageContext.jsx';
+import WorkGlobe from '../components/WorkGlobe';
 
 const FadeIn = ({ children, className = '', delay = 0 }) => {
     const [ref, isInView] = useInView();
@@ -298,16 +299,27 @@ export default function Home() {
                 <FadeIn>
                     <SectionHeading>{t.sections.philosophy}</SectionHeading>
                 </FadeIn>
-                <FadeIn>
-                    <div className="max-w-2xl space-y-5 text-ink-2 leading-relaxed">
-                        <p>{t.philosophy.p1}</p>
-                        <p>{t.philosophy.p2}</p>
-                        <p className="pt-2 text-sm">
-                            <span className="block text-xs text-ink-3 mb-1.5">{t.philosophy.stack_label}</span>
-                            Rust, C++, Python, Swift, LEAN 4, LaTeX, MATLAB, Julia, React
-                        </p>
-                    </div>
-                </FadeIn>
+                <div className="grid md:grid-cols-[1fr_300px] gap-12 md:gap-16 items-center">
+                    <FadeIn>
+                        <div className="space-y-5 text-ink-2 leading-relaxed">
+                            <p>{t.philosophy.p1}</p>
+                            <p>{t.philosophy.p2}</p>
+                            <p className="pt-2 text-sm">
+                                <span className="block text-xs text-ink-3 mb-1.5">{t.philosophy.stack_label}</span>
+                                Rust, C++, Python, Swift, LEAN 4, LaTeX, MATLAB, Julia, React
+                            </p>
+                        </div>
+                    </FadeIn>
+                    <FadeIn delay={100}>
+                        <div className="flex flex-col items-center">
+                            <WorkGlobe />
+                            <div className="mt-4 space-y-1 text-center">
+                                <p className="text-xs text-ink-3">{t.philosophy.loc_tokyo}</p>
+                                <p className="text-xs text-ink-3">{t.philosophy.loc_singapore}</p>
+                            </div>
+                        </div>
+                    </FadeIn>
+                </div>
             </section>
 
             {/* Contact */}

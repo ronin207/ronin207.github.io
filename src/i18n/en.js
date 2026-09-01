@@ -49,6 +49,8 @@ const en = {
     p1: 'My research sits at the intersection of cryptography, AI, and systems engineering, bridging theoretical hardness assumptions and practical, user-centric applications.',
     p2: 'My academic path moved from verified numerical computation for neural networks to the formal analysis of cryptographic protocols. The same rigor now applies to cryptographic hardness and to the security evaluation of AI systems.',
     stack_label: 'Working languages and tools',
+    loc_tokyo: 'Waseda University — Tokyo',
+    loc_singapore: 'AIFT — Singapore',
   },
 
   // Contact

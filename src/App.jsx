@@ -1,12 +1,24 @@
-import React, { useState, useEffect, Suspense, lazy } from 'react';
+import React, { useState, useEffect, useRef, Suspense, lazy } from 'react';
 import { BrowserRouter as Router, Routes, Route, useLocation, Link } from 'react-router-dom';
 import { Sun, Moon, Monitor, Search } from 'lucide-react';
 import useTheme from './hooks/useTheme.jsx';
 import MobileNav from './components/MobileNav';
 import PageTransition from './components/PageTransition';
 import CommandPalette from './components/CommandPalette';
+import CityGlow from './components/CityGlow';
 import { LanguageProvider, useLang } from './i18n/LanguageContext.jsx';
 import Home from './pages/Home';
+
+/* Displacement field for glass refraction — referenced by
+   backdrop-filter: url(#liquid-lens) in index.css */
+const LiquidLens = () => (
+  <svg aria-hidden="true" width="0" height="0" style={{ position: 'absolute' }}>
+    <filter id="liquid-lens" x="-20%" y="-20%" width="140%" height="140%">
+      <feTurbulence type="fractalNoise" baseFrequency="0.006 0.012" numOctaves="1" seed="7" result="noise" />
+      <feDisplacementMap in="SourceGraphic" in2="noise" scale="26" xChannelSelector="R" yChannelSelector="G" />
+    </filter>
+  </svg>
+);
 
 const Cv = lazy(() => import('./pages/Cv'));
 const ProjectDetail = lazy(() => import('./pages/ProjectDetail'));
@@ -75,6 +87,47 @@ function AppInner() {
   const { theme, setTheme } = useTheme();
   const { t } = useLang();
   const [paletteOpen, setPaletteOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
+  const navRef = useRef(null);
+
+  // url() filters inside backdrop-filter only render in Chromium;
+  // Safari and Firefox keep the plain-blur declaration instead.
+  useEffect(() => {
+    if (window.chrome) {
+      document.documentElement.classList.add('refract-ok');
+    }
+  }, []);
+
+  // Glass deepens once content passes underneath it (DESIGN.md §25)
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 24);
+    onScroll();
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => window.removeEventListener('scroll', onScroll);
+  }, []);
+
+  // Specular highlight follows the pointer across the nav glass
+  useEffect(() => {
+    const nav = navRef.current;
+    if (!nav) return;
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    if (!window.matchMedia('(pointer: fine)').matches) return;
+
+    const move = (e) => {
+      const rect = nav.getBoundingClientRect();
+      nav.style.setProperty('--sheen-x', `${e.clientX - rect.left}px`);
+      nav.style.setProperty('--sheen-y', `${e.clientY - rect.top}px`);
+      nav.style.setProperty('--sheen-o', '1');
+    };
+    const leave = () => nav.style.setProperty('--sheen-o', '0');
+
+    nav.addEventListener('mousemove', move);
+    nav.addEventListener('mouseleave', leave);
+    return () => {
+      nav.removeEventListener('mousemove', move);
+      nav.removeEventListener('mouseleave', leave);
+    };
+  }, []);
 
   useEffect(() => {
     const handleKeyDown = (e) => {
@@ -100,12 +153,19 @@ function AppInner() {
   return (
     <>
       <ScrollToTop />
-      <div className="min-h-screen font-sans text-ink bg-canvas transition-colors duration-300">
+      {/* No background here — the body paints the canvas so the fixed
+          atmosphere and skyline layers (z-index −1) stay visible */}
+      <div className="min-h-screen font-sans text-ink">
+        <LiquidLens />
+        <CityGlow />
         <CommandPalette isOpen={paletteOpen} onClose={() => setPaletteOpen(false)} />
 
         {/* Floating glass navigation (DESIGN.md §4.2, §10) */}
         <header className="fixed top-0 left-0 w-full z-50 px-4 pt-4">
-          <nav className="glass max-w-3xl mx-auto rounded-2xl px-4 md:px-5 py-2.5 flex items-center justify-between">
+          <nav
+            ref={navRef}
+            className={`glass sheen ${scrolled ? 'glass-deep' : ''} max-w-3xl mx-auto rounded-2xl px-4 md:px-5 py-2.5 flex items-center justify-between transition-shadow duration-500`}
+          >
             <Link to="/" className="text-sm font-medium tracking-tight text-ink">
               Takumi Otsuka
             </Link>

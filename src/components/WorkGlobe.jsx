@@ -45,7 +45,10 @@ const WorkGlobe = forwardRef(function WorkGlobe(
   ref,
 ) {
   const canvasRef = useRef(null);
-  const apiRef = useRef({ flyTo: (_city, done) => done?.() });
+  const apiRef = useRef({
+    flyTo: (_city, done) => done?.(),
+    flyBack: (done) => done?.(),
+  });
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -117,17 +120,36 @@ const WorkGlobe = forwardRef(function WorkGlobe(
 
     // The pull-in: the globe itself grows out of its box toward the
     // viewer (CSS transform) while the camera dives into the city
-    // (cobe state) — unclipped, above the page, then the route changes.
+    // (cobe state). The globe persists — the city sheet scrolls up
+    // over it, and flyBack() reverses the journey on close.
+    let elScale = 1;
+    const setElScale = (v) => {
+      elScale = v;
+      canvas.style.transform = `scale(${v})`;
+    };
+
     apiRef.current.flyTo = (city, done) => {
       const [lat, lon] = CITIES[city];
       canvas.classList.add('globe-flight');
+      const s0 = elScale;
       animateState(
         { phi: phiFor(lon), theta: thetaFor(lat), scale: 1.5 },
         900,
         done,
-        (eased) => {
-          canvas.style.transform = `scale(${1 + 1.4 * eased})`;
+        (eased) => setElScale(s0 + (2.4 - s0) * eased),
+      );
+    };
+
+    apiRef.current.flyBack = (done) => {
+      const s0 = elScale;
+      animateState(
+        { ...rest },
+        800,
+        () => {
+          canvas.classList.remove('globe-flight');
+          done?.();
         },
+        (eased) => setElScale(s0 + (1 - s0) * eased),
       );
     };
 
@@ -184,6 +206,7 @@ const WorkGlobe = forwardRef(function WorkGlobe(
 
   useImperativeHandle(ref, () => ({
     flyTo: (city, done) => apiRef.current.flyTo(city, done),
+    flyBack: (done) => apiRef.current.flyBack(done),
   }), []);
 
   return (

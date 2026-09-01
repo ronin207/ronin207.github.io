@@ -1,12 +1,14 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Mail, Github, FileText, Linkedin } from 'lucide-react';
-import { Link, useNavigate } from 'react-router-dom';
+import { createPortal } from 'react-dom';
+import { Mail, Github, FileText, Linkedin, X, ArrowRight } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import useInView from '../hooks/useInView.jsx';
 import projects from '../data/projects';
 import usePageTitle from '../hooks/usePageTitle.jsx';
 import { useLang } from '../i18n/LanguageContext.jsx';
 import WorkGlobe from '../components/WorkGlobe';
 import ProjectRow from '../components/ProjectRow';
+import CityContent from '../components/CityContent';
 
 const FadeIn = ({ children, className = '', delay = 0 }) => {
     const [ref, isInView] = useInView();
@@ -162,17 +164,61 @@ const ContactForm = () => {
 export default function Home() {
     const { t } = useLang();
     usePageTitle();
-    const navigate = useNavigate();
     const globeRef = useRef(null);
     const selected = projects.filter((p) => p.selected);
     const other = projects.filter((p) => !p.selected);
 
-    // The pull-in: fly the globe into the city, then arrive on its page
+    // City view: the globe stays on screen; the city's content is a
+    // sheet that scrolls up over it. No route change, no hard cut.
+    const [cityView, setCityView] = useState(null); // null | 'tokyo' | 'singapore'
+    const [sheetState, setSheetState] = useState('closed'); // closed | open | closing
+    const flying = useRef(false);
+
     const goCity = (city) => {
-        const arrive = () => navigate(`/work/${city}`);
-        if (globeRef.current) globeRef.current.flyTo(city, arrive);
-        else arrive();
+        if (flying.current) return;
+        flying.current = true;
+        globeRef.current?.flyTo(city, () => {
+            flying.current = false;
+            setCityView(city);
+            setSheetState('open');
+        });
     };
+
+    const closeCity = () => {
+        if (flying.current) return;
+        setSheetState('closing');
+        setTimeout(() => {
+            setSheetState('closed');
+            setCityView(null);
+            globeRef.current?.flyBack();
+        }, 280);
+    };
+
+    const goNext = (nextCity) => {
+        if (flying.current) return;
+        setSheetState('closing');
+        setTimeout(() => {
+            setCityView(null);
+            flying.current = true;
+            globeRef.current?.flyTo(nextCity, () => {
+                flying.current = false;
+                setCityView(nextCity);
+                setSheetState('open');
+            });
+        }, 280);
+    };
+
+    // While the sheet is up: lock the page scroll, close on Escape
+    useEffect(() => {
+        if (!cityView) return;
+        document.body.style.overflow = 'hidden';
+        const onKey = (e) => { if (e.key === 'Escape') closeCity(); };
+        window.addEventListener('keydown', onKey);
+        return () => {
+            document.body.style.overflow = '';
+            window.removeEventListener('keydown', onKey);
+        };
+    }, [cityView]);
 
     const contactLinks = [
         { href: 'mailto:takumi_ot09@fuji.waseda.jp', icon: Mail, label: 'takumi_ot09@fuji.waseda.jp' },
@@ -180,8 +226,51 @@ export default function Home() {
         { href: 'https://linkedin.com/in/takumi-otsuka', icon: Linkedin, label: 'linkedin.com/in/takumi-otsuka', external: true },
     ];
 
+    const nextOf = cityView === 'tokyo' ? 'singapore' : 'tokyo';
+
     return (
         <div className="mx-auto max-w-3xl px-6 pt-40 md:pt-52">
+            {/* City sheet — scrolls up over the zoomed globe. The spacer
+                at the top keeps the city in view; clicking it closes. */}
+            {cityView && createPortal(
+                <div className={`fixed inset-0 z-[45] overflow-y-auto overscroll-contain ${sheetState === 'closing' ? 'sheet-leave' : 'sheet-enter'}`}>
+                    <div className="h-[38vh] min-h-[180px]" onClick={closeCity} aria-hidden="true" />
+                    <div className="city-sheet">
+                        <div className="max-w-3xl mx-auto px-6 pt-6 pb-24">
+                            <div className="flex items-center justify-between mb-10">
+                                <button
+                                    onClick={closeCity}
+                                    className="p-2 -ml-2 rounded-full text-ink-3 hover:text-ink hover:bg-mist transition-colors"
+                                    aria-label={t.locations.close}
+                                >
+                                    <X size={18} />
+                                </button>
+                                <button
+                                    onClick={() => goNext(nextOf)}
+                                    className="inline-flex items-center gap-2 text-sm text-ink-3 hover:text-ink transition-colors"
+                                >
+                                    <span>{t.locations.next}: {t.locations[nextOf].name}</span>
+                                    <ArrowRight size={15} />
+                                </button>
+                            </div>
+                            <CityContent city={cityView} />
+                            <div className="mt-16 pt-8 border-t border-hairline flex items-center justify-between">
+                                <button onClick={closeCity} className="text-sm text-ink-3 hover:text-ink transition-colors">
+                                    {t.locations.close}
+                                </button>
+                                <button
+                                    onClick={() => goNext(nextOf)}
+                                    className="inline-flex items-center gap-2 text-sm text-accent hover:text-accent-strong transition-colors"
+                                >
+                                    <span>{t.locations.next}: {t.locations[nextOf].name}</span>
+                                    <ArrowRight size={15} />
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>,
+                document.body
+            )}
             {/* Hero — the globe as the room's centerpiece. Name and
                 statement stay first (DESIGN.md §32); the globe is a lens
                 into the work, never a gate: everything remains reachable

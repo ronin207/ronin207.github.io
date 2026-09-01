@@ -178,6 +178,45 @@
     will-change: transform;
 }
 
+/* City sheet — a reading surface that rides up over the zoomed globe */
+.city-sheet {
+    min-height: 70vh;
+    background: var(--canvas);
+    border-top: 1px solid var(--hairline);
+    border-radius: 24px 24px 0 0;
+    box-shadow: 0 -12px 48px rgba(0, 0, 0, 0.12);
+}
+
+@keyframes sheetUp {
+    from {
+        transform: translateY(48px);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+@keyframes sheetDown {
+    from {
+        transform: translateY(0);
+        opacity: 1;
+    }
+    to {
+        transform: translateY(48px);
+        opacity: 0;
+    }
+}
+
+.sheet-enter {
+    animation: sheetUp 0.45s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.sheet-leave {
+    animation: sheetDown 0.3s ease both;
+}
+
 /* Gentle specular highlight that follows the pointer (DESIGN.md §25) */
 .sheen {
     position: relative;

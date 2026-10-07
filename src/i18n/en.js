@@ -4,6 +4,7 @@ const en = {
     overview: 'overview',
     research: 'research',
     contact: 'contact',
+    cv: 'cv',
   },
 
   // Hero

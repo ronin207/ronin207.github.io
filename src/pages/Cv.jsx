@@ -82,7 +82,7 @@ export default function Cv({ resolvedTheme }) {
                 <CvItem
                     title="AIFT"
                     subtitle="AI Security Research Intern"
-                    date="Mar. 2026 -- Present"
+                    date="Mar. 2026 – Present"
                     location="Singapore (Remote)"
                 >
                     <ul className="list-disc list-outside ml-4 space-y-1">
@@ -94,7 +94,7 @@ export default function Cv({ resolvedTheme }) {
                 <CvItem
                     title="Functional AI Partners Pte Ltd"
                     subtitle="AI Consultant (Architect)"
-                    date="Sep. 2025 -- Dec. 2025"
+                    date="Sep. 2025 – Dec. 2025"
                     location="Tokyo, Japan"
                 >
                     <ul className="list-disc list-outside ml-4 space-y-1">
@@ -107,7 +107,7 @@ export default function Cv({ resolvedTheme }) {
                 <CvItem
                     title="Waseda University"
                     subtitle="LLM Engineer/Researcher"
-                    date="Feb. 2025 -- Aug. 2025"
+                    date="Feb. 2025 – Aug. 2025"
                     location="Tokyo, Japan"
                 >
                     <ul className="list-disc list-outside ml-4 space-y-1">
@@ -120,7 +120,7 @@ export default function Cv({ resolvedTheme }) {
                 <CvItem
                     title="Waseda University"
                     subtitle="Teaching Assistant (Foundations of Numerical Analysis)"
-                    date="Apr. 2023 -- Aug. 2025"
+                    date="Apr. 2023 – Aug. 2025"
                     location="Tokyo, Japan"
                 >
                     <ul className="list-disc list-outside ml-4 space-y-1">
@@ -133,7 +133,7 @@ export default function Cv({ resolvedTheme }) {
                 <CvItem
                     title="Waseda University"
                     subtitle="Research Assistant"
-                    date="May 2023 -- Aug. 2024"
+                    date="May 2023 – Aug. 2024"
                     location="Tokyo, Japan"
                 >
                     <ul className="list-disc list-outside ml-4 space-y-1">
@@ -146,7 +146,7 @@ export default function Cv({ resolvedTheme }) {
                 <CvItem
                     title="GDG on Campus Waseda University"
                     subtitle="Lead / Project Team Lead"
-                    date="Oct. 2021 -- July 2024"
+                    date="Oct. 2021 – July 2024"
                     location="Tokyo, Japan"
                 >
                     <ul className="list-disc list-outside ml-4 space-y-1">
@@ -158,7 +158,7 @@ export default function Cv({ resolvedTheme }) {
                 <CvItem
                     title="BMW Group"
                     subtitle="IT Intern"
-                    date="Nov. 2022 -- Apr. 2023"
+                    date="Nov. 2022 – Apr. 2023"
                     location="Tokyo, Japan"
                 >
                     <ul className="list-disc list-outside ml-4 space-y-1">
@@ -170,7 +170,7 @@ export default function Cv({ resolvedTheme }) {
                 <CvItem
                     title="Republic of Singapore Air Force"
                     subtitle="Motor Transport Operator"
-                    date="Dec. 2018 -- Oct. 2020"
+                    date="Dec. 2018 – Oct. 2020"
                     location="Singapore"
                 >
                     <ul className="list-disc list-outside ml-4 space-y-1">
@@ -226,7 +226,7 @@ export default function Cv({ resolvedTheme }) {
                 <CvItem
                     title="Waseda University"
                     subtitle="Master of Engineering — Computer Science and Communications Engineering"
-                    date="Sep. 2024 -- Sep. 2026"
+                    date="Sep. 2024 – Sep. 2026"
                     location="Tokyo, Japan"
                 >
                     <ul className="list-disc list-outside ml-4 space-y-1">
@@ -238,7 +238,7 @@ export default function Cv({ resolvedTheme }) {
                 <CvItem
                     title="Waseda University"
                     subtitle="Bachelor of Engineering — Major in Mathematical Science"
-                    date="Sep. 2020 -- Sep. 2024"
+                    date="Sep. 2020 – Sep. 2024"
                     location="Tokyo, Japan"
                 >
                     <ul className="list-disc list-outside ml-4 space-y-1">
@@ -249,7 +249,7 @@ export default function Cv({ resolvedTheme }) {
                 <CvItem
                     title="Harrow International School Bangkok"
                     subtitle="High School Diploma"
-                    date="2013 -- 2018"
+                    date="2013 – 2018"
                     location="Bangkok, Thailand"
                 />
             </CvSection>
@@ -302,7 +302,7 @@ export default function Cv({ resolvedTheme }) {
             </CvSection>
 
             <footer className="mt-20 pt-8 border-t border-neutral-200 dark:border-neutral-800 text-center text-xs font-mono text-neutral-400">
-                &copy; 2025 TAKUMI.DEV // CV_MODULE_LOADED
+                &copy; {new Date().getFullYear()} TAKUMI.DEV // CV_MODULE_LOADED
             </footer>
         </div>
     );

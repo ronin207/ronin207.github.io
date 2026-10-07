@@ -44,6 +44,7 @@ const NeuralBackground = ({ theme }) => {
     const resize = () => {
       canvas.width = window.innerWidth;
       canvas.height = window.innerHeight;
+      init();
     };
 
     const handleMouseMove = (e) => {
@@ -61,8 +62,6 @@ const NeuralBackground = ({ theme }) => {
     window.addEventListener('resize', resize);
     window.addEventListener('mousemove', handleMouseMove);
     document.addEventListener('visibilitychange', handleVisibility);
-
-    resize();
 
     class Particle {
       constructor() {
@@ -140,7 +139,7 @@ const NeuralBackground = ({ theme }) => {
       animationFrameId = requestAnimationFrame(animate);
     };
 
-    init();
+    resize();
     animate();
 
     return () => {
@@ -154,6 +153,7 @@ const NeuralBackground = ({ theme }) => {
   return (
     <canvas
       ref={canvasRef}
+      aria-hidden="true"
       className={`fixed top-0 left-0 w-full h-full -z-10 transition-colors duration-500 ${theme === 'dark' ? 'bg-[#050505]' : 'bg-[#FAFAFA]'}`}
     />
   );
@@ -272,6 +272,12 @@ function AppInner() {
       <div className={`min-h-screen transition-colors duration-500 font-sans overflow-x-hidden relative z-0
         ${resolvedTheme === 'dark' ? 'text-neutral-200 selection:bg-emerald-900 selection:text-emerald-50' : 'text-neutral-900 selection:bg-indigo-100 selection:text-indigo-900'}
       `}>
+        <a
+          href="#main-content"
+          className="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-[300] focus:px-4 focus:py-2 focus:rounded-lg focus:bg-white focus:text-neutral-900 dark:focus:bg-neutral-900 dark:focus:text-white focus:text-sm focus:font-mono focus:shadow-lg"
+        >
+          Skip to main content
+        </a>
         <NeuralBackground theme={resolvedTheme} />
         <ScrollProgress resolvedTheme={resolvedTheme} />
         <CustomCursor resolvedTheme={resolvedTheme} />
@@ -289,7 +295,7 @@ function AppInner() {
         />
 
         {/* Navigation */}
-        <nav className="fixed top-0 left-0 w-full z-50 px-4 md:px-6 py-6 flex justify-between items-center bg-transparent pointer-events-none">
+        <nav aria-label="Main" className="fixed top-0 left-0 w-full z-50 px-4 md:px-6 py-6 flex justify-between items-center bg-transparent pointer-events-none">
           <div className={`text-sm font-bold tracking-tight pointer-events-auto ${resolvedTheme === 'dark' ? 'text-white' : 'text-neutral-900'}`}>
             <Link to="/">
               <DecryptText text="TAKUMI.DEV" />
@@ -318,7 +324,7 @@ function AppInner() {
           </div>
         </nav>
 
-        <main className="relative z-10">
+        <main id="main-content" className="relative z-10">
           <Suspense fallback={<LoadingFallback />}>
             <PageTransition>
               <Routes>

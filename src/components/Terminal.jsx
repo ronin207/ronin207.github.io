@@ -125,7 +125,7 @@ const COMMANDS = {
   ],
 };
 
-const Terminal = ({ isOpen, onClose, resolvedTheme }) => {
+const Terminal = ({ isOpen, onClose }) => {
   const [history, setHistory] = useState([
     'TAKUMI.DEV Terminal v1.0.0',
     'Type "help" for available commands.',
@@ -137,11 +137,16 @@ const Terminal = ({ isOpen, onClose, resolvedTheme }) => {
   const inputRef = useRef(null);
   const scrollRef = useRef(null);
 
-  // Auto-focus input when terminal opens
+  // Auto-focus input when terminal opens; lock body scroll and restore focus on close
   useEffect(() => {
-    if (isOpen && inputRef.current) {
-      inputRef.current.focus();
-    }
+    if (!isOpen) return;
+    const previouslyFocused = document.activeElement;
+    inputRef.current?.focus();
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.body.style.overflow = '';
+      previouslyFocused?.focus?.();
+    };
   }, [isOpen]);
 
   // Auto-scroll to bottom
@@ -215,7 +220,12 @@ const Terminal = ({ isOpen, onClose, resolvedTheme }) => {
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+    <div
+      role="dialog"
+      aria-modal="true"
+      aria-label="Interactive terminal"
+      className="fixed inset-0 z-[100] flex items-center justify-center p-4"
+    >
       {/* Backdrop */}
       <div
         className="absolute inset-0 bg-black/60 backdrop-blur-sm"
@@ -255,7 +265,7 @@ const Terminal = ({ isOpen, onClose, resolvedTheme }) => {
         {/* Terminal body */}
         <div
           ref={scrollRef}
-          className="p-4 h-[400px] overflow-y-auto font-mono text-sm leading-relaxed"
+          className="p-4 h-[400px] overflow-y-auto overscroll-contain font-mono text-sm leading-relaxed"
         >
           {history.map((line, i) => (
             <div key={i} className="text-emerald-400/90 whitespace-pre-wrap">

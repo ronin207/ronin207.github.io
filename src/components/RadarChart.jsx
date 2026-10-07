@@ -46,6 +46,8 @@ const RadarChart = ({ data, size = 300, theme = 'dark' }) => {
                 viewBox={`0 0 ${size} ${size}`}
                 className="overflow-visible w-full h-auto"
                 style={{ maxWidth: size }}
+                role="img"
+                aria-label={`Skill radar chart: ${data.map((d) => `${d.label} ${d.value} out of 100`).join(', ')}`}
             >
                 {/* Grid Circles/Polygons */}
                 {levels.map((level, i) => {

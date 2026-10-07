@@ -4,6 +4,7 @@ const ja = {
     overview: '概要',
     research: '研究',
     contact: '連絡',
+    cv: '経歴',
   },
 
   // Hero

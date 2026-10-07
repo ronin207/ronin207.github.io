@@ -10,13 +10,20 @@ import React, { useRef, useEffect, useMemo } from 'react';
 const HeroVisual = ({ resolvedTheme }) => {
   const canvasRef = useRef(null);
 
-  const colors = useMemo(() => ({
-    node: resolvedTheme === 'dark' ? 'rgba(16, 185, 129, 0.7)' : 'rgba(79, 70, 229, 0.6)',
-    nodeGlow: resolvedTheme === 'dark' ? 'rgba(16, 185, 129, 0.15)' : 'rgba(79, 70, 229, 0.1)',
-    edge: resolvedTheme === 'dark' ? 'rgba(16, 185, 129, 0.2)' : 'rgba(79, 70, 229, 0.15)',
-    edgeHighlight: resolvedTheme === 'dark' ? 'rgba(16, 185, 129, 0.5)' : 'rgba(79, 70, 229, 0.4)',
-    label: resolvedTheme === 'dark' ? 'rgba(150, 150, 150, 0.4)' : 'rgba(100, 100, 100, 0.35)',
-  }), [resolvedTheme]);
+  // Nodes keep the theme accent (visual anchors); edges + halos sample an iridescent palette so
+  // the lattice reads as a refracting force-field rather than a flat wireframe.
+  const colors = useMemo(() => {
+    const isDark = resolvedTheme === 'dark';
+    return {
+      node: isDark ? 'rgba(16, 185, 129, 0.75)' : 'rgba(79, 70, 229, 0.65)',
+      label: isDark ? 'rgba(150, 150, 150, 0.4)' : 'rgba(100, 100, 100, 0.35)',
+      // Iridescent triple — cyan → magenta → pale (cycled). Light theme uses darker variants
+      // so the palette is visible on a white background without washing out.
+      iri: isDark
+        ? [[103, 232, 249], [240, 171, 252], [254, 243, 199]]
+        : [[34, 156, 180], [180, 90, 200], [217, 160, 90]],
+    };
+  }, [resolvedTheme]);
 
   useEffect(() => {
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
@@ -25,10 +32,16 @@ const HeroVisual = ({ resolvedTheme }) => {
     const ctx = canvas.getContext('2d');
     const dpr = window.devicePixelRatio || 1;
 
+    // Cache the canvas size — reading getBoundingClientRect inside the animation
+    // loop forces a layout read every frame.
+    let viewW = 0;
+    let viewH = 0;
     const resize = () => {
       const rect = canvas.getBoundingClientRect();
-      canvas.width = rect.width * dpr;
-      canvas.height = rect.height * dpr;
+      viewW = rect.width;
+      viewH = rect.height;
+      canvas.width = viewW * dpr;
+      canvas.height = viewH * dpr;
       ctx.scale(dpr, dpr);
     };
     resize();
@@ -94,14 +107,30 @@ const HeroVisual = ({ resolvedTheme }) => {
     // Labels that orbit near specific vertices
     const labels = ['ZKP', 'PQC', 'AI', 'ML', 'LEAN', 'λ'];
 
+    // Sample a smooth tri-color iridescent cycle: c1 → c2 → c3 → c1.
+    const lerp = (a, b, k) => a + (b - a) * k;
+    const sampleIri = (phase) => {
+      const p = ((phase % 1) + 1) % 1;
+      const [c1, c2, c3] = colors.iri;
+      if (p < 1 / 3) {
+        const k = p * 3;
+        return [lerp(c1[0], c2[0], k), lerp(c1[1], c2[1], k), lerp(c1[2], c2[2], k)];
+      }
+      if (p < 2 / 3) {
+        const k = (p - 1 / 3) * 3;
+        return [lerp(c2[0], c3[0], k), lerp(c2[1], c3[1], k), lerp(c2[2], c3[2], k)];
+      }
+      const k = (p - 2 / 3) * 3;
+      return [lerp(c3[0], c1[0], k), lerp(c3[1], c1[1], k), lerp(c3[2], c1[2], k)];
+    };
+
     let animId;
     let t = 0;
 
     const animate = () => {
       t += 0.003;
-      const rect = canvas.getBoundingClientRect();
-      const w = rect.width;
-      const h = rect.height;
+      const w = viewW;
+      const h = viewH;
       ctx.clearRect(0, 0, w, h);
 
       const cx = w / 2;
@@ -138,18 +167,20 @@ const HeroVisual = ({ resolvedTheme }) => {
       // Pulse effect
       const pulse = 0.5 + Math.sin(t * 3) * 0.15;
 
-      // Draw edges
-      edges.forEach(([a, b]) => {
+      // Draw edges with iridescent stroke — phase per edge index drifts over time so the lattice
+      // slowly cycles through cyan → magenta → pale, like a soap-bubble film catching light.
+      edges.forEach(([a, b], idx) => {
         const pa = projected[a];
         const pb = projected[b];
         if (!pa || !pb) return;
         const avgZ = (pa.z + pb.z) / 2;
         const depthAlpha = Math.max(0.1, Math.min(1, (avgZ + scale) / (scale * 2)));
 
-        // Highlight some edges based on time
         const highlight = Math.sin(t * 2 + a * 0.5) > 0.7;
+        const [er, eg, eb] = sampleIri(idx * 0.04 + t * 0.18);
+        const baseAlpha = highlight ? 0.55 : 0.22;
 
-        ctx.strokeStyle = highlight ? colors.edgeHighlight : colors.edge;
+        ctx.strokeStyle = `rgba(${er.toFixed(0)}, ${eg.toFixed(0)}, ${eb.toFixed(0)}, ${baseAlpha})`;
         ctx.lineWidth = highlight ? 1.5 : 0.8;
         ctx.globalAlpha = depthAlpha * (highlight ? 1 : 0.7);
         ctx.beginPath();
@@ -166,11 +197,18 @@ const HeroVisual = ({ resolvedTheme }) => {
         const isMain = i < vertices.length;
         const r = isMain ? 2.5 * p.s : 1.5 * p.s;
 
-        // Glow
+        // Iridescent halo — radial gradient with two iridescent stops, refracting around the node.
         if (isMain) {
-          ctx.fillStyle = colors.nodeGlow;
+          const haloR = r * 4 * pulse;
+          const [hr, hg, hb] = sampleIri(i * 0.11 + t * 0.25);
+          const [hr2, hg2, hb2] = sampleIri(i * 0.11 + t * 0.25 + 0.4);
+          const gradient = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, haloR);
+          gradient.addColorStop(0, `rgba(${hr.toFixed(0)}, ${hg.toFixed(0)}, ${hb.toFixed(0)}, 0.20)`);
+          gradient.addColorStop(0.55, `rgba(${hr2.toFixed(0)}, ${hg2.toFixed(0)}, ${hb2.toFixed(0)}, 0.08)`);
+          gradient.addColorStop(1, `rgba(${hr.toFixed(0)}, ${hg.toFixed(0)}, ${hb.toFixed(0)}, 0)`);
+          ctx.fillStyle = gradient;
           ctx.beginPath();
-          ctx.arc(p.x, p.y, r * 4 * pulse, 0, Math.PI * 2);
+          ctx.arc(p.x, p.y, haloR, 0, Math.PI * 2);
           ctx.fill();
         }
 

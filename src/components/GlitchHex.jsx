@@ -7,6 +7,7 @@ import React, { useState, useEffect, useRef } from 'react';
  */
 const GlitchHex = ({ value, prefix = '0x0' }) => {
   const [display, setDisplay] = useState(`${prefix}${value}`);
+  const [glitching, setGlitching] = useState(false);
   const intervalRef = useRef(null);
   const timeoutRef = useRef(null);
 
@@ -19,6 +20,7 @@ const GlitchHex = ({ value, prefix = '0x0' }) => {
     const glitch = () => {
       let ticks = 0;
       clearInterval(intervalRef.current);
+      setGlitching(true);
 
       intervalRef.current = setInterval(() => {
         if (ticks < 6) {
@@ -28,18 +30,20 @@ const GlitchHex = ({ value, prefix = '0x0' }) => {
           setDisplay(`${randomPrefix}${randomHex}`);
         } else {
           setDisplay(original);
+          setGlitching(false);
           clearInterval(intervalRef.current);
         }
         ticks++;
       }, 50);
 
-      // Schedule next glitch randomly between 8-20 seconds
-      const next = 8000 + Math.random() * 12000;
+      // Demoted from 8-20s → 30-60s. The flicker reads as rare signal interference,
+      // not constant chatter — the iridescent vocabulary now carries the always-on motion.
+      const next = 30000 + Math.random() * 30000;
       timeoutRef.current = setTimeout(glitch, next);
     };
 
-    // First glitch after 4-10 seconds
-    timeoutRef.current = setTimeout(glitch, 4000 + Math.random() * 6000);
+    // First glitch after 15-30 seconds
+    timeoutRef.current = setTimeout(glitch, 15000 + Math.random() * 15000);
 
     return () => {
       clearTimeout(timeoutRef.current);
@@ -47,7 +51,17 @@ const GlitchHex = ({ value, prefix = '0x0' }) => {
     };
   }, [value, prefix]);
 
-  return <span>{display}</span>;
+  return (
+    <span
+      style={{
+        display: 'inline-block',
+        filter: glitching ? 'blur(1.2px)' : 'none',
+        transition: 'filter 0.18s ease-out',
+      }}
+    >
+      {display}
+    </span>
+  );
 };
 
 export default GlitchHex;

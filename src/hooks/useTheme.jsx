@@ -20,6 +20,7 @@ const useTheme = () => {
         root.classList.remove('dark');
         root.classList.add('light');
       }
+      root.style.colorScheme = t;
     };
 
     if (theme === 'system') {

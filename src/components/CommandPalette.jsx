@@ -33,13 +33,19 @@ const CommandPalette = ({ isOpen, onClose, resolvedTheme }) => {
     );
   }, [query]);
 
-  // Reset on open
+  // Reset on open; lock body scroll and restore focus on close
   useEffect(() => {
-    if (isOpen) {
-      setQuery('');
-      setSelectedIndex(0);
-      setTimeout(() => inputRef.current?.focus(), 50);
-    }
+    if (!isOpen) return;
+    const previouslyFocused = document.activeElement;
+    setQuery('');
+    setSelectedIndex(0);
+    const focusTimer = setTimeout(() => inputRef.current?.focus(), 50);
+    document.body.style.overflow = 'hidden';
+    return () => {
+      clearTimeout(focusTimer);
+      document.body.style.overflow = '';
+      previouslyFocused?.focus?.();
+    };
   }, [isOpen]);
 
   // Reset selected index when results change
@@ -87,7 +93,12 @@ const CommandPalette = ({ isOpen, onClose, resolvedTheme }) => {
   let globalIndex = 0;
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-start justify-center pt-[20vh] px-4">
+    <div
+      role="dialog"
+      aria-modal="true"
+      aria-label="Command palette"
+      className="fixed inset-0 z-[100] flex items-start justify-center pt-[20vh] px-4"
+    >
       <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={onClose} />
 
       <div className={`relative w-full max-w-lg rounded-xl border shadow-2xl overflow-hidden ${
@@ -124,7 +135,7 @@ const CommandPalette = ({ isOpen, onClose, resolvedTheme }) => {
         </div>
 
         {/* Results */}
-        <div className="max-h-[300px] overflow-y-auto py-2">
+        <div className="max-h-[300px] overflow-y-auto overscroll-contain py-2">
           {filtered.length === 0 && (
             <div className="px-4 py-8 text-center text-sm text-neutral-500 font-mono">
               No results found.
@@ -144,6 +155,7 @@ const CommandPalette = ({ isOpen, onClose, resolvedTheme }) => {
                 return (
                   <button
                     key={item.id}
+                    ref={currentIndex === selectedIndex ? (el) => el?.scrollIntoView({ block: 'nearest' }) : undefined}
                     onClick={() => executeItem(item)}
                     onMouseEnter={() => setSelectedIndex(currentIndex)}
                     className={`w-full flex items-center gap-3 px-4 py-2.5 text-sm text-left transition-colors ${

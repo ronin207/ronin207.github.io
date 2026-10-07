@@ -12,8 +12,7 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
  */
 const IntroAnimation = ({ onComplete, resolvedTheme }) => {
   const canvasRef = useRef(null);
-  const [opacity, setOpacity] = useState(1);
-  const [textProgress, setTextProgress] = useState(0);
+  const overlayRef = useRef(null);
   const [phase, setPhase] = useState('running');
   const completedRef = useRef(false);
 
@@ -173,8 +172,7 @@ const IntroAnimation = ({ onComplete, resolvedTheme }) => {
 
       // Release phase — particles detach and drift
       if (t >= RELEASE) {
-        const releaseProgress = Math.min((t - RELEASE) / (END - RELEASE), 1);
-        particles.forEach((p, i) => {
+        particles.forEach((p) => {
           if (!p.released) {
             p.released = true;
             // Keep current velocity + add gentle outward drift
@@ -254,6 +252,26 @@ const IntroAnimation = ({ onComplete, resolvedTheme }) => {
         }
       });
 
+      // --- Force-field pulse ---
+      // At the moment particles snap into the T, emit a brief iridescent shockwave outward.
+      // One Sue / Invisible Woman moment to close the intro before particles drift away.
+      if (t > CONVERGE - 80 && t < CONVERGE + 700) {
+        const pulseT = (t - (CONVERGE - 80)) / 780;
+        const pulseR = pulseT * Math.max(canvas.width, canvas.height) * 0.65;
+        const pulseAlpha = Math.max(0, 1 - pulseT) * 0.32;
+        if (pulseR > 1) {
+          const gradient = ctx.createRadialGradient(cx, cy, pulseR * 0.55, cx, cy, pulseR);
+          gradient.addColorStop(0, 'rgba(254, 243, 199, 0)');
+          gradient.addColorStop(0.45, `rgba(240, 171, 252, ${(pulseAlpha * 0.55).toFixed(3)})`);
+          gradient.addColorStop(0.82, `rgba(103, 232, 249, ${pulseAlpha.toFixed(3)})`);
+          gradient.addColorStop(1, 'rgba(103, 232, 249, 0)');
+          ctx.fillStyle = gradient;
+          ctx.beginPath();
+          ctx.arc(cx, cy, pulseR, 0, Math.PI * 2);
+          ctx.fill();
+        }
+      }
+
       // --- Text typing ---
       if (t > CONVERGE + 200) {
         const textStr = 'TAKUMI.DEV';
@@ -274,16 +292,17 @@ const IntroAnimation = ({ onComplete, resolvedTheme }) => {
             ctx.fillRect(cx + textWidth / 2 + 2, cy + scale * 4.5 - 10, 1, 14);
           }
         }
-
-        setTextProgress(charProgress);
       }
 
       // --- Overlay fade ---
-      if (t > HOLD) {
+      // Written straight to the DOM node — a per-frame setState here would re-render
+      // the component ~60×/s for the whole fade.
+      if (t > HOLD && overlayRef.current) {
         const fadeProgress = Math.min((t - HOLD) / (END - HOLD), 1);
         // Ease out — fast start, slow end
         const easedFade = 1 - Math.pow(fadeProgress, 0.5);
-        setOpacity(easedFade);
+        overlayRef.current.style.opacity = easedFade;
+        overlayRef.current.style.pointerEvents = easedFade < 0.1 ? 'none' : 'auto';
       }
 
       // --- Completion ---
@@ -298,22 +317,41 @@ const IntroAnimation = ({ onComplete, resolvedTheme }) => {
     };
 
     animId = requestAnimationFrame(animate);
-    return () => cancelAnimationFrame(animId);
+
+    // Allow skipping — click anywhere or press any key
+    const skip = () => {
+      cancelAnimationFrame(animId);
+      sessionStorage.setItem('intro_played', '1');
+      setPhase('done');
+      handleComplete();
+    };
+    window.addEventListener('pointerdown', skip);
+    window.addEventListener('keydown', skip);
+
+    return () => {
+      cancelAnimationFrame(animId);
+      window.removeEventListener('pointerdown', skip);
+      window.removeEventListener('keydown', skip);
+    };
   }, [handleComplete, resolvedTheme]);
 
   if (phase === 'done') return null;
 
   return (
     <div
+      ref={overlayRef}
       className="fixed inset-0 z-[200]"
       style={{
-        opacity,
+        opacity: 1,
         background: resolvedTheme === 'dark' ? '#050505' : '#FAFAFA',
-        pointerEvents: opacity < 0.1 ? 'none' : 'auto',
         transition: 'none', // we control opacity manually per-frame
       }}
+      aria-hidden="true"
     >
       <canvas ref={canvasRef} className="w-full h-full" />
+      <span className="absolute bottom-8 left-1/2 -translate-x-1/2 text-[10px] font-mono uppercase tracking-widest text-neutral-500/60 select-none">
+        Click to skip
+      </span>
     </div>
   );
 };

@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { Menu, X, TerminalSquare, Search } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
+import { useLang } from '../i18n/LanguageContext.jsx';
 
 const MobileNav = ({ resolvedTheme, onTerminalOpen, onPaletteOpen }) => {
   const [isOpen, setIsOpen] = useState(false);
   const { pathname } = useLocation();
+  const { t } = useLang();
   const isDark = resolvedTheme === 'dark';
 
   // Close on route change
@@ -23,10 +25,10 @@ const MobileNav = ({ resolvedTheme, onTerminalOpen, onPaletteOpen }) => {
   }, [isOpen]);
 
   const navItems = [
-    { label: 'Overview', href: '/#overview' },
-    { label: 'Research', href: '/#research' },
-    { label: 'Contact', href: '/#contact' },
-    { label: 'CV', href: '/cv', isRoute: true },
+    { label: t.nav.overview, href: '/#overview' },
+    { label: t.nav.research, href: '/#research' },
+    { label: t.nav.contact, href: '/#contact' },
+    { label: t.nav.cv, href: '/cv', isRoute: true },
   ];
 
   const linkClass = `text-2xl font-mono tracking-widest uppercase transition-colors ${

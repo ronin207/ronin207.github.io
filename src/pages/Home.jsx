@@ -28,14 +28,14 @@ const FadeIn = ({ children, className = '', delay = 0 }) => {
     );
 };
 
-const ProjectCard = ({ project, resolvedTheme, index }) => {
+const ProjectCard = ({ project, index }) => {
     const Icon = project.icon;
     return (
         <FadeIn delay={index * 100}>
-            <TiltCard className="relative rounded-lg" maxTilt={6} scale={1.008} glareOpacity={0.06}>
+            <TiltCard className="relative rounded-lg -mx-4 px-4" maxTilt={6} scale={1.008} glareOpacity={0.06}>
                 <Link
                     to={`/projects/${project.slug}`}
-                    className="group block border-t border-neutral-200 dark:border-neutral-800 py-8 transition-all hover:bg-neutral-50/50 dark:hover:bg-neutral-900/30 -mx-4 px-4 rounded-lg"
+                    className="group block border-t border-neutral-200 dark:border-neutral-800 py-8 transition-all hover:bg-neutral-50/50 dark:hover:bg-neutral-900/30 rounded-lg"
                 >
                     <div className="flex flex-col md:flex-row md:items-baseline justify-between mb-4">
                         <div className="flex items-center gap-3">
@@ -114,31 +114,49 @@ const ContactForm = ({ resolvedTheme }) => {
     return (
         <form onSubmit={handleSubmit} className="space-y-4 max-w-lg">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <input
-                    type="text"
-                    placeholder={t.contact.form.name}
+                <div>
+                    <label htmlFor="contact-name" className="sr-only">{t.contact.form.name}</label>
+                    <input
+                        id="contact-name"
+                        name="name"
+                        type="text"
+                        autoComplete="name"
+                        placeholder={t.contact.form.name}
+                        required
+                        value={formData.name}
+                        onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                        className={inputClasses}
+                    />
+                </div>
+                <div>
+                    <label htmlFor="contact-email" className="sr-only">{t.contact.form.email}</label>
+                    <input
+                        id="contact-email"
+                        name="email"
+                        type="email"
+                        autoComplete="email"
+                        spellCheck={false}
+                        placeholder={t.contact.form.email}
+                        required
+                        value={formData.email}
+                        onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                        className={inputClasses}
+                    />
+                </div>
+            </div>
+            <div>
+                <label htmlFor="contact-message" className="sr-only">{t.contact.form.message}</label>
+                <textarea
+                    id="contact-message"
+                    name="message"
+                    placeholder={t.contact.form.message}
                     required
-                    value={formData.name}
-                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                    className={inputClasses}
-                />
-                <input
-                    type="email"
-                    placeholder={t.contact.form.email}
-                    required
-                    value={formData.email}
-                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                    className={inputClasses}
+                    rows={4}
+                    value={formData.message}
+                    onChange={(e) => setFormData({ ...formData, message: e.target.value })}
+                    className={`${inputClasses} resize-none`}
                 />
             </div>
-            <textarea
-                placeholder={t.contact.form.message}
-                required
-                rows={4}
-                value={formData.message}
-                onChange={(e) => setFormData({ ...formData, message: e.target.value })}
-                className={`${inputClasses} resize-none`}
-            />
             <button
                 type="submit"
                 disabled={status === 'sending'}
@@ -148,11 +166,15 @@ const ContactForm = ({ resolvedTheme }) => {
                         : 'bg-neutral-900 text-white hover:bg-neutral-700 disabled:bg-neutral-300 disabled:text-neutral-500'
                 }`}
             >
-                <Send size={16} />
+                <Send size={16} aria-hidden="true" />
                 {status === 'sending' ? t.contact.form.sending : status === 'sent' ? t.contact.form.sent : t.contact.form.send}
             </button>
+            {/* Announce async status changes to screen readers */}
+            <p aria-live="polite" role="status" className="sr-only">
+                {status === 'sending' ? t.contact.form.sending : status === 'sent' ? t.contact.form.sent : ''}
+            </p>
             {status === 'error' && (
-                <p className="text-sm text-red-500 font-mono">
+                <p role="alert" className="text-sm text-red-500 font-mono">
                     {t.contact.form.error}
                 </p>
             )}
@@ -416,7 +438,7 @@ export default function Home({ resolvedTheme }) {
                 </FadeIn>
 
                 <div className="mt-24 text-[10px] font-mono text-neutral-400 dark:text-neutral-700 uppercase tracking-widest">
-                    &copy; 2025 {t.footer.copyright} // {t.footer.system}: {resolvedTheme.toUpperCase()}
+                    &copy; {new Date().getFullYear()} {t.footer.copyright} // {t.footer.system}: {resolvedTheme.toUpperCase()}
                 </div>
 
                 <div className="mt-6 flex flex-wrap gap-4 text-[10px] font-mono text-neutral-400/50 dark:text-neutral-700/50">
